@@ -1,0 +1,18 @@
+# https://docs.travis-ci.com/user/getting-started/
+# https://docs.travis-ci.com/user/customizing-the-build/
+# http://lint.travis-ci.org/
+
+language: python
+python:
+  - 2.7
+  - 3.4
+
+install:
+  - pip install cython numpy matplotlib scikit-learn
+  - python setup.py build_ext --inplace --cythonize
+
+script: python TestProjectionPursuitRegressor.py
+
+notifications:
+  email: 
+    - pvlkmrv@gmail.com
