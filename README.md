@@ -4,10 +4,10 @@
 [![Coveralls Status](https://coveralls.io/repos/scikit-learn-contrib/project-template/badge.svg?branch=master&service=github)](https://coveralls.io/r/scikit-learn-contrib/project-template)
 [![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master)
 
-This repository is home to a [scikit-learn](http://scikit-learn.org/)-compatible estimator based on Jerome Friedman and Werner Stuetzle's **Projection Pursuit Regression** algorithm[1][2].
+This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-compatible estimators based on Jerome Friedman's generalizations[1] of his and Werner Stuetzle's *Projection Pursuit Regression* algorithm[2][3]. A regressor capable of multivariate estimation and a classifier based on regression to a one-hot multivariate representation are included.
 
 ## Installation and Usage
-The package by itself comes with a single module and an estimator. Before
+The package by itself comes with a single module containing the estimators. Before
 installing the module you will need `numpy` and `scipy`.
 To install the module execute:
 ```shell
@@ -27,8 +27,9 @@ you should be able to execute the following in Python:
 
 ## References
 
-1. Hastie, Tibshirani, & Friedman. (2016). *The Elements of Statistical Learning 2nd Ed.*, section 11.2.
-2. (2017) *Projection pursuit regression* https://en.wikipedia.org/wiki/Projection_pursuit_regression
+1. Friedman, Jerome. (1985). "Classification and Multiple Regression Through Projection Pursuit." http://www.slac.stanford.edu/pubs/slacpubs/3750/slac-pub-3824.pdf
+2. Hastie, Tibshirani, & Friedman. (2016). *The Elements of Statistical Learning 2nd Ed.*, section 11.2.
+3. (2017) *Projection pursuit regression* https://en.wikipedia.org/wiki/Projection_pursuit_regression
 
 
 
