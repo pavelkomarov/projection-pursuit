@@ -1,19 +1,17 @@
 import numpy
 from scipy.interpolate import UnivariateSpline
-from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
+from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin, \
+	ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
 from sklearn.utils import as_float_array, check_random_state
 from matplotlib import pyplot
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+	# TODO: use CategoricalEncoder instead, coming in v0.20 of sklearn
 
 class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
-	"""Projection Pursuit Regression uses a collection of vectors to multiply
-	input data, thereby linearly "projecting" it in to a single dimension,
-	passes these through univariate nonlinear functions, expands those outputs
-	with a multiplication by output vectors (a sort of inverse projection but
-	this time to the output space), and sums all the results together.
-
-	The evaluation function for a fanciful ith example looks like:
+	""" Projection pursuit regression is a statistical model of the form:
 
 		y_i = sum j=1 to r (f_j(x_i*alpha_j) * beta_j')
 
@@ -155,6 +153,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			the loop and move on. Smaller values may be preferred here since
 			backfit iterations are expensive.
 
+		`random_state` int, numpy.RandomState, default=None:
+			An optional object with which to seed randomness.
+
 		`show_plots` boolean, default=False:
 			Whether to produce plots of projections versus residual variance
 			throughout the training process.
@@ -193,18 +194,11 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			not isinstance(backfit_maxiter, int) or backfit_maxiter <= 0:
 			raise ValueError('Maximum iteration settings must be ints > 0.')
 
-		self.r = r
-		self.fit_type = fit_type
-		self.degree = degree
-		self.opt_level = opt_level
-		self.weights = weights
-		self.eps_stage = eps_stage
-		self.eps_backfit = eps_backfit
-		self.stage_maxiter = stage_maxiter
-		self.backfit_maxiter = backfit_maxiter
-		self.random_state = random_state
-		self.show_plots = show_plots
-		self.plot_epoch = plot_epoch
+		# Save parameters to the object
+		params = locals()
+		for k, v in params.items():
+			if k != 'self':
+				setattr(self, k, v)
 
 	def transform(self, X):
 		""" Find the projections of X through all alpha vectors in the PPR.
@@ -308,7 +302,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		self._random = check_random_state(self.random_state)
 
 		# Now that input and output dimensions are known, parameters vectors
-		# and can be initialized. Vectors are always stored vertically.
+		# can be initialized. Vectors are always stored vertically.
 		self._alpha = self._random.randn(X.shape[1], self.r) # p x r
 		self._beta = self._random.randn(Y.shape[1], self.r) # d x r
 		self._f = [lambda x: x*0 for j in range(self.r)] # zero functions
@@ -338,12 +332,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		`j` int:
 			The index of this stage in the additive model.
 		`fit_weights` boolean:
-			Whether to fit 
-
-		Returns
-		-------
-		self ProjectionPursuitRegressor:
-			A trained model.
+			Whether to refit alpha_j or leave it unmodified.
 		"""
 		# projections P = X*Alphas, P_j = X*alpha_j
 		P = self.transform(X) # the n x r projections matrix
@@ -364,7 +353,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		loss = numpy.inf
 		p_j = P[:,j] # n x 1, the jth column of the projections matrix
 		# Use the absolute value between loss and previous loss because we do
-		# not want to terminate if the unstability of parameters in the first
+		# not want to terminate if the instability of parameters in the first
 		# few iterations causes loss to momentarily increase.
 		while (abs(prev_loss - loss) > self.eps_stage and n < self.stage_maxiter):			
 			# To understand how to optimize each set of parameters assuming the
@@ -381,7 +370,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			#			-> f* = wrb/(w(b^2))
 			#
 			#	Remember b is actually a beta vector here, so b/(b^2) isn't
-			#	really just b.
+			#	really just b. And we can't be hasty to cancel w either.
 			#
 			#	The full expression for the optimal mapping of the jth f* at the
 			#	ith point becomes:
@@ -425,7 +414,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# parameters because it is inside the function f, so the approach
 			# taken to optimize the last two parameter sets does not apply.
 			#
-			# Thankfully, if we let
+			# Thankfully, there is a way. Let
 			#
 			#	g(a) = r - f(a)*b
 			#
@@ -437,18 +426,21 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# where g is subscripted by j for belonging to the jth stage of the
 			# additive model and a k for belonging to the kth output dimension,
 			# r_jk is the kth column of the residual matrix for the jth stage
-			# R_j, and beta_jk is the scalar kth element of beta_j, then there
-			# is a method called Gauss-Newton to optimize problems of the form
+			# R_j, and beta_jk is the scalar kth element of beta_j.
+			#
+			# Now consider the form of the loss function expressed in this form:
 			#
 			#	sum k=1 to d ( g_jk(a) )^2
 			#
-			# which is the same form as the loss function!
+			# There is a method to solve such problems called Gauss-Newton!
+			# The canonical solution is a generalization of Newton's method:
 			#
-			# The canonical solution is a_next = a - pinv(J)*g(a), where pinv
-			# is the pseudoinverse (J'*J)^-1 * J', and J is the Jacobian matrix
-			# of g. Here it's a little more complicated because there are d 
-			# (n_outputs) different g_jk functions, but we do need to define
-			# the Jacobian for the kth one:
+			#	a_next = a - pinv(J)*g(a)
+			#
+			# where pinv is the pseudoinverse (J'*J)^-1 * J', and J is the
+			# Jacobian matrix of g. Here it's a little more complicated because
+			# there are d  (n_outputs) different g_jk functions, but we do need
+			# to define the Jacobian for the kth one:
 			#
 			#	J_k[u,v] = dg_jk[u](a) / da[v]
 			#
@@ -462,8 +454,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			#	-> dg_jk[u](a) / da[v] = -df_j(x_u*alpha_j) * beta_jk * x_uv
 			#
 			#	where x_u is the uth row of X. Basically for the derivative just
-			#	drop the constant r_jk and multiply by the constant coefficient
-			#	of alpha_j[v] = X[u, v]
+			#	drop the constant vector r_jk and multiply by the constan
+			#	coefficient of alpha_j[v] = X[u, v]
 			#
 			#	J_k = [ -df_j(x_0*alpha_j)*   -df_j(x_1*alpha_j)*             ]
 			#		  [       beta_jk*x_00          beta_jk*x_10      ...     ]
@@ -473,10 +465,10 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			#		  [                                                       ]
 			#		  [       ...                   ...                       ]
 			#		  [                                     -df(x_n*alpha_j)* ]
-			#         [                                         beta_jk*x_np  ]
+			#		  [                                         beta_jk*x_np  ]
 			#
 			#	= -beta_jk.*[            |                              |           ]
-			#			    [ df_j(x_0*alpha_j).*x_0   ...   df_j(x_n*alpha_j).*x_n ]
+			#				[ df_j(x_0*alpha_j).*x_0   ...   df_j(x_n*alpha_j).*x_n ]
 			#				[            |                              |           ]
 			#
 			#	= -beta_jk.*df_j(X*alpha_j) O* X
@@ -492,7 +484,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			#	sum k=1 to d (w_k.*J_k'*J_k) * delta = -sum k=1 to d (w_k J_k'*g_jk)
 			#
 			# where g_jk is the vector values of the function g_jk evaluated at
-			# the current alpha_j and delta is a_next - a, the update to alpha.
+			# the current alpha_j, and delta is a_next - a, the update to alpha.
 			#
 			# Let 	A = sum k=1 to d (w_k.*J_k'*J_k)
 			#		b = -sum k=1 to d (w_k.*J_k'*g_jk)
@@ -546,12 +538,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		`j` int:
 			The index of this stage in the additive model.
 		`fit_weights` boolean:
-			Whether to fit 
-
-		Returns
-		-------
-		self ProjectionPursuitRegressor:
-			A trained model.
+			Whether to refit stages' alphas or leave them unmodified.
 		"""
 		n = 0
 		prev_loss = -numpy.inf
@@ -598,8 +585,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			fit = UnivariateSpline(x[order], y[order], k=self.degree,
 				s=len(residual)*residual.var(), ext=0)
 			deriv = fit.derivative(1)
-		else:
-			raise ValueError(self.fit_type + ' is not a valid fit_type.')
 
 		# Plot the projections versus the residuals in matplotlib so the user
 		# can get a picture of what is happening.
@@ -616,7 +601,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		return fit, deriv
 
 
-class ProjectionPursuitClassifier(BaseEstimator):
+class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 	""" Perform classification with projection pursuit. Let risk R be
 
 		R = sum i=1 to n (
@@ -626,11 +611,154 @@ class ProjectionPursuitClassifier(BaseEstimator):
 
 	where
 		i iterates over examples
+		q is the total number of classes in the problem
 		min over k implements the optimal decision rule for each example
 		l_ck is the user-specified loss for predicting y=k when in truth y=c
 		the inner sum is the total loss for predicting y=k
 		and p(c | x_i) is the true probability y=c given input x_i
 
+	The unknown here is that conditional probability. If we define an indicator
+	variable
+
+		h_ci = 1 if y_i=c, 0 otherwise
+
+	then the conditional probability can be rewritten as
+
+		p(c | x_i) = (pi_c * S / s_c) * E[h_c | x_i]
+
+	where
+		pi_c is the prior probability that y=c (h_c=1), calculable from the
+			training set with |num examples where y=c|/|total num examples|
+		s_c = sum i=1 to n (w_i*h_ci)
+		S = sum c=1 to q (s_c)
+		E means the expected value
+		h_c is the vector of h_ci values for all i
+
+	Notice that if the weights w_i in s_c are uniform (so no example is
+	considered any more important than any other), then pi_c = s_c/S, and all
+	those terms cancel. Additionally, l_ck is often simplified as
+
+		l_ck = 1 if c=/=k, 0 if c==k
+
+	So put it all together:
+
+		R = sum i=1 to n (
+			min over k in [1,q] (
+				S * sum over c=1 to q (
+					(pi_c * l_ck / s_c) * E[h_c | X] )))
+
+	With the simplifying assumptions that all examples are equally important
+	and misclassification is equally bad between all class pairs:
+
+		R = sum i=1 to n (
+			min over k in [1,q] (
+				sum over c=/=k ( E[h_c | X] )))
+
+	Or equivalently:
+
+		R = sum i=1 to n (
+			max over k in [1,q] ( E[h_c | X] ))
+
+	because the sum is minimized by excluding the largest expectation.
+
+	Now, recognize E[h_c | X] is a vector of the values E[h_ci | x_i], and for
+	training data the expectation that h_ci has a given value given x_i is
+	known to be either a one or a zero.
+
+	Further, recognize that stacking h_c for all classes c together as columns
+	yields H, a one-hot representation of the true classifications Y. That is:
+
+		Y = [ 1 ]				H = [ 0 1 0 0 ]
+			[ 0 ]					[ 1 0 0 0 ]
+			[ 2 ]					[ 0 0 1 0 ]
+			[ . ]					[   ...   ]
+			[ . ]					[   ...   ]
+			[ 3 ]					[ 0 0 0 1 ]
+
+	And now we can model H with a multivariate PPR model, where we take the
+	predicted class of examples to be:
+
+		y_i = argmax over c ( h_ci )
+
+	That is the index of the column where the largest value in the ith row of
+	^H, the predicted H, is located.
+
+	Training the model to make these predictions should ideally involve
+	optimizing the the misclassification risk as the loss function, but that
+	max over k in [1,q] makes the risk nonconvex, which means we can no longer
+	employ the methods detailed in the alternating optimization loop of
+	ProjectionPursuitRegressor's _fit_stage.
+
+	But Friedman assures us that using the same L2 sum-of-squares loss function
+	as used for multivariate regression is acceptable, and if we wish to account
+	for examples being of differing importances or specify a funky non-uniform
+	pairwise loss scheme, all we have to do is use weights:
+
+		w_c = (S * pi_c / s_c) sum over k in [1,q] ( l_ck )
+
 	"""
-	def __init__(self):
-		pass
+	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
+				 example_weights=None, pairwise_loss_weights=None,
+				 eps_stage=0.0001, eps_backfit=0.01, stage_maxiter=100,
+				 backfit_maxiter=10, random_state=None, show_plots=False,
+				 plot_epoch=50):
+		
+		# sklearn's clone() works by calling get_params, which calls get_param_
+		# names to crawl the constructor and find out which parameters are
+		# necessary to reconstruct the model without its data, and then calling
+		# getattr a bunch of times to find the settings of these parameters in
+		# the object. So if you simply use the parameters and don't actually
+		# save them as attributes, clone will pass a bunch of Nones rather than
+		# the defaults to the constructor.
+		params = locals()
+		for k, v in params.items():
+			if k != 'self':
+				setattr(self, k, v)
+
+	def fit(self, X, Y):
+		X, Y = check_X_y(X, Y)
+		 # required property for classifier. unique_labels also performs some
+		self.classes_ = unique_labels(Y)				# input validation.
+
+		if Y.ndim == 2 and Y.shape[1] != 1:
+			raise ValueErorr('Only single column Y supported for classification.')
+		elif Y.ndim == 1:
+			Y = Y.reshape(-1, 1)
+
+		# TODO: CategoricalEncoder coming in sklearn v0.20 can simplify this.
+		if Y.dtype.char == 'S' or Y.dtype.char == 'O' and isinstance(Y[0,0], str):
+			self._labeler = LabelEncoder()
+			Y = self._labeler.fit_transform(Y[:,0]).reshape(-1, 1)
+		else:
+			self._labeler = None
+
+		self._encoder = OneHotEncoder()
+		H = self._encoder.fit_transform(Y).A
+
+		# create the weights
+		if self.example_weights == None and self.pairwise_loss_weights == None:
+			weights = 'uniform'
+		# TODO
+		#elif pairwise_loss_weights == None:
+		#	weights = 
+		#elif
+
+		self._ppr = ProjectionPursuitRegressor(self.r, self.fit_type,
+			self.degree, self.opt_level, weights, self.eps_stage,
+			self.eps_backfit, self.stage_maxiter, self.backfit_maxiter,
+			self.random_state, self.show_plots, self.plot_epoch)
+
+		self._ppr.fit(X, H)
+		return self
+
+	def predict(self, X):
+		check_is_fitted(self, '_ppr')
+		H = self._ppr.predict(X)
+		if H.ndim == 1:
+			H = H.reshape(-1, 1)
+
+		# argmax gives the index of the most likely class. Map back to the class
+		# itself with the encoder's active features array.
+		numerical_classes = self._encoder.active_features_[numpy.argmax(H, axis=1)]
+		return self._labeler.inverse_transform(numerical_classes) if \
+			self._labeler else numerical_classes

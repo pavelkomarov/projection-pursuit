@@ -17,9 +17,13 @@ from sklearn.utils.testing import assert_warns_message
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
 @pytest.mark.fast_test
-def test_all_pass_sklearn_check_estimator():
+def test_regressor_passes_sklearn_checks():
 	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
 	estimator_checks.check_estimator(ProjectionPursuitRegressor)
+
+@pytest.mark.fast_test
+def test_classifier_passes_sklearn_checks():
+	estimator_checks.check_estimator(ProjectionPursuitClassifier)
 
 @pytest.mark.fast_test
 def test_ppr_learns():
