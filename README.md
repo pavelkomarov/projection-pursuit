@@ -1,8 +1,8 @@
 # PPR
 
-[![Travis Status](https://travis-ci.org/scikit-learn-contrib/project-template.svg?branch=master)](https://travis-ci.org/scikit-learn-contrib/project-template)
-[![Coveralls Status](https://coveralls.io/repos/scikit-learn-contrib/project-template/badge.svg?branch=master&service=github)](https://coveralls.io/r/scikit-learn-contrib/project-template)
-[![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master)
+[![Travis Status](https://travis-ci.org/scikit-learn-contrib/project-template.svg?branch=master)](https://travis-ci.org/pavelkomarov/projection-pursuit)
+[![Coveralls Status](https://coveralls.io/repos/scikit-learn-contrib/project-template/badge.svg?branch=master&service=github)](https://coveralls.io/r/pavelkomarov/projection-pursuit)
+[![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/pavelkomarov/projection-pursuit/tree/master)
 
 This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-compatible estimators based on Jerome Friedman's generalizations[1] of his and Werner Stuetzle's *Projection Pursuit Regression* algorithm[2][3]. A regressor capable of multivariate estimation and a classifier based on regression to a one-hot multivariate representation are included.
 
@@ -15,12 +15,12 @@ $ python setup.py install
 ```
 or 
 ```
-pip install sklearn-ppr
+pip install projection-pursuit
 ```
 If the installation is successful, and `scikit-learn` is correctly installed,
 you should be able to execute the following in Python:
 ```python
->>> from skppr import ProjectionPursuitRegressor
+>>> from skpp import ProjectionPursuitRegressor
 >>> estimator = ProjectionPursuitRegressor()
 >>> estimator.fit(np.arange(10).reshape(10, 1), np.arange(10))
 ```
