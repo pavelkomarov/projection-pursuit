@@ -3,10 +3,10 @@ from scipy.interpolate import UnivariateSpline
 from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils import as_float_array
+from sklearn.utils import as_float_array, check_random_state
 from matplotlib import pyplot
 
-class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMixin):
+class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
 	"""Projection Pursuit Regression uses a collection of vectors to multiply
 	input data, thereby linearly "projecting" it in to a single dimension,
 	passes these through univariate nonlinear functions, expands those outputs
@@ -91,16 +91,17 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 		1. Initialize all alpha_j, f_j and beta_j to something random. Let j=1. 
 		2. Find the "residual" variance undexplained by all stages fit so far.
 		3. Project the input in to single dimension: X*alpha_j.
-		4. Fit f_j to the residual versus projections.
+		4. Fit f_j to a weighted residual target versus projections.
 		5. Use this f_j to find a better setting for beta_j.
-		6. Repeat steps 3-5 until f_k and beta_k converge.
-		7. (optional) Use this converged f_k, beta_k to retune all f_j, beta_j
-			where j < k. (Backfitting)
-		8. Increment k and go back to step 2 until k reaches r.
+		6. Use a Gauss-Newton scheme to solve for an update to alpha_j.
+		7. Repeat steps 3-6 until f_j, beta_j, and alpha_j converge.
+		8. (optional) Use the newly converged parameters to retune all previous
+			f_j, beta_j, alpha_j where j < k. (backfitting)
+		8. Increment j and go back to step 2 until j reaches r.
 
 	This is a form of alternating optimization, wherein all parameters except
 	one are held constant, the best setting for that parameter given those
-	constants is found, and the process cycles through all parameters until
+	constants is found, and the process cycled through all parameters until
 	convergence.
 
 
@@ -163,10 +164,10 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			of the stage-fitting process.
 
 	"""
-	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
-				 weights='inverse-variance', eps_stage=0.001, eps_backfit=0.01,
-				 stage_maxiter=100, backfit_maxiter=10, show_plots=False,
-				 plot_epoch=50):
+	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='low',
+				 weights='inverse-variance', eps_stage=0.0001, eps_backfit=0.01,
+				 stage_maxiter=100, backfit_maxiter=10, random_state=None,
+				 show_plots=False, plot_epoch=50):
 
 		# paranoid parameter checking to make it easier for users to know when
 		# they have gone awry and to make it safe to assume some variables can
@@ -181,6 +182,7 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			raise ValueError('opt_level must be either low, medium, or high.')
 		if weights not in ['inverse-variance', 'uniform']:
 			try:
+				print weights
 				weights = as_float_array(weights)
 			except (TypeError, ValueError) as error:
 				raise ValueError('weights must be either inverse-variance, ' + \
@@ -202,6 +204,7 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 		self.eps_backfit = eps_backfit
 		self.stage_maxiter = stage_maxiter
 		self.backfit_maxiter = backfit_maxiter
+		self.random_state = random_state
 		self.show_plots = show_plots
 		self.plot_epoch = plot_epoch
 
@@ -281,8 +284,9 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 		if Y.ndim == 1: # standardize Y as 2D so the below always works
 			Y = Y.reshape((-1,1)) # reshape returns a view to existing data
 
-		# Now that the output is known, the weights can be initialized or
-		# checked for validity
+		# Sklearn does not allow mutation of object parameters (the ones not
+		# prepended by an underscore), so construct or reassign weights to
+		# _weights
 		if self.weights == 'inverse-variance':
 			variances = Y.var(axis=0)
 			if max(variances) == 0:
@@ -292,19 +296,23 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			# of variances, so the corresponding columns have small weight and
 			# are not major determiners of loss.
 			variances[variances == 0] = max(variances)
-			self.weights = 1./variances
+			self._weights = 1./variances
 		elif self.weights == 'uniform':
-			self.weights = numpy.ones(Y.shape[1])
-		elif isinstance(self.weights, numpy.ndarray) and \
-			Y.shape[1] != self.weights.shape[0]:
-			raise ValueError('weights provided to the constructor have ' +
-				'dimension ' + self.weights.shape[0] + ', which disagrees ' +
-				'with the width of Y:' + Y.shape[1])
+			self._weights = numpy.ones(Y.shape[1])
+		elif isinstance(self.weights, numpy.ndarray):
+			if Y.shape[1] != self.weights.shape[0]:
+				raise ValueError('weights provided to the constructor have ' +
+					'dimension ' + self.weights.shape[0] + ', which disagrees '
+					+ 'with the width of Y:' + Y.shape[1])
+			else:
+				self._weights = self.weights
+
+		self._random = check_random_state(self.random_state)
 
 		# Now that input and output dimensions are known, parameters vectors
 		# and can be initialized. Vectors are always stored vertically.
-		self._alpha = numpy.random.randn(X.shape[1], self.r) # p x r
-		self._beta = numpy.random.randn(Y.shape[1], self.r) # d x r
+		self._alpha = self._random.randn(X.shape[1], self.r) # p x r
+		self._beta = self._random.randn(Y.shape[1], self.r) # d x r
 		self._f = [lambda x: x*0 for j in range(self.r)] # zero functions
 		self._df = [None for j in range(self.r)] # no derivatives yet
 
@@ -385,8 +393,8 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			#						  = a weighted residual target
 			#
 			#		where r_ijk is R_j[i, k]
-			w_R_j = numpy.dot(R_j, self.weights*self._beta[:, j]) / (numpy.inner(
-				self._beta[:, j], self.weights*self._beta[:, j]) + 1e-9)
+			w_R_j = numpy.dot(R_j, self._weights*self._beta[:, j]) / (numpy.inner(
+				self._beta[:, j], self._weights*self._beta[:, j]) + 1e-9)
 			# Find the function that best fits the weighted residuals against
 			# the projections.
 			self._f[j], self._df[j] = self._fit_2d(p_j, w_R_j, j, n)
@@ -495,11 +503,11 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 				# Find the part of the Jacobians that is common to all
 				J = -(self._df[j](p_j)*X.T).T
 				JTJ = numpy.dot(J.T, J)
-				A = sum([self.weights[k] * (self._beta[k, j]**2) * JTJ
+				A = sum([self._weights[k] * (self._beta[k, j]**2) * JTJ
 					for k in range(Y.shape[1])])
 				# Collect all g_jk vectors in to a convenient matrix G_j
 				G_j = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
-				b = -sum([self.weights[k] * self._beta[k, j] *
+				b = -sum([self._weights[k] * self._beta[k, j] *
 					numpy.dot(J.T, G_j[:, k]) for k in range(Y.shape[1])])
 
 				delta = numpy.linalg.lstsq(A, b)[0]
@@ -518,7 +526,7 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			# difference between Y and ^Y, the predictions. 
 			diff = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
 			# multiply columns of the diff by weights, square, and sum
-			loss = numpy.sum((self.weights*diff)**2)
+			loss = numpy.sum((self._weights*diff)**2)
 			n += 1
 
 	def _backfit(self, X, Y, j, fit_weights):
@@ -556,7 +564,7 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 
 			prev_loss = loss
 			diff = Y - self.predict(X)			
-			loss = numpy.sum((self.weights*diff)**2)
+			loss = numpy.sum((self._weights*diff)**2)
 			n += 1
 
 	def _fit_2d(self, x, y, j, itr):
@@ -608,3 +616,23 @@ class ProjectionPursuitRegressor(BaseEstimator):#, RegressorMixin, TransformerMi
 			pyplot.show()
 
 		return fit, deriv
+
+
+class ProjectionPursuitClassifier(BaseEstimator):
+	""" Perform classification with projection pursuit. Let risk R be
+
+		R = sum i=1 to n (
+			min over k in [1,q] (
+				sum over c=1 to q (
+					l_ck * p(c | x_i) )))
+
+	where
+		i iterates over examples
+		min over k implements the optimal decision rule for each example
+		l_ck is the user-specified loss for predicting y=k when in truth y=c
+		the inner sum is the total loss for predicting y=k
+		and p(c | x_i) is the true probability y=c given input x_i
+
+	"""
+	def __init__(self):
+		pass
