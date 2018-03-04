@@ -2,7 +2,7 @@ import numpy
 import pytest
 import time
 
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils import estimator_checks
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_less
 from sklearn.utils.testing import assert_almost_equal
@@ -18,7 +18,8 @@ from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
 @pytest.mark.fast_test
 def test_all_pass_sklearn_check_estimator():
-	check_estimator(ProjectionPursuitRegressor)
+	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
+	estimator_checks.check_estimator(ProjectionPursuitRegressor)
 
 @pytest.mark.fast_test
 def test_ppr_learns():
