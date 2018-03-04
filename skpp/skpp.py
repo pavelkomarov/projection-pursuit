@@ -162,9 +162,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		`plot_epoch` int, default=50:
 			If plots are displayed, show them every `plot_epoch` iterations
 			of the stage-fitting process.
-
 	"""
-	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='low',
+	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
 				 weights='inverse-variance', eps_stage=0.0001, eps_backfit=0.01,
 				 stage_maxiter=100, backfit_maxiter=10, random_state=None,
 				 show_plots=False, plot_epoch=50):
