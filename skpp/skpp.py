@@ -181,7 +181,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			raise ValueError('opt_level must be either low, medium, or high.')
 		if weights not in ['inverse-variance', 'uniform']:
 			try:
-				print weights
 				weights = as_float_array(weights)
 			except (TypeError, ValueError) as error:
 				raise ValueError('weights must be either inverse-variance, ' + \

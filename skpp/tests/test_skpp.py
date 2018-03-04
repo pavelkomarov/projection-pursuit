@@ -47,23 +47,23 @@ def test_ppr_learns():
 	estimator = ProjectionPursuitRegressor(r=20, fit_type='polyfit', degree=3,
 		opt_level='high', weights='inverse-variance')
 
-	print 'Average magnitude of squared Y per element', numpy.sum(Y**2)/Y.size
+	print('Average magnitude of squared Y per element', numpy.sum(Y**2)/Y.size)
 
-	print 'training'
+	print('training')
 	before = time.time()
 	estimator.fit(X[training, :], Y[training, :])
 	after = time.time()
-	print 'finished in', after-before, 'seconds'
+	print('finished in', after-before, 'seconds')
 
 	Yhat = estimator.predict(X[training, :])
 	train_error = numpy.sum((Y[training, :] - Yhat)**2)/Y[training, :].size
-	print 'Average magnitude of squared error in training data per element', \
-		train_error
+	print('Average magnitude of squared error in training data per element',
+		train_error)
 
 	Yhat = estimator.predict(X[testing, :])
 	test_error = numpy.sum((Y[testing, :] - Yhat)**2)/Y[testing, :].size
-	print 'Average magnitude of squared error in testing data per element', \
-		test_error
+	print('Average magnitude of squared error in testing data per element',
+		test_error)
 
 	assert_less(train_error, 1e-7)
 	assert_less(test_error, 1e-7)
