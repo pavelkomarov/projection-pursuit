@@ -7,7 +7,7 @@ python:
 - 3.4
 install:
 - pip install numpy matplotlib scipy scikit-learn pytest
-script: pytest
+script: pytest -s
 notifications:
   email:
   - pvlkmrv@gmail.com

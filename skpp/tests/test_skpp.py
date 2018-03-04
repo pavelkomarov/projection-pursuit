@@ -40,7 +40,7 @@ def test_ppr_learns():
 		Y += numpy.outer(f(projection), beta)
 
 	# Divide the data
-	temp = range(n)
+	temp = numpy.arange(n)
 	numpy.random.shuffle(temp)
 	training = temp[0:int(n*0.8)]
 	testing = temp[int(n*0.8):]
