@@ -36,21 +36,8 @@ you should be able to execute the following in Python:
 TODO:
 
 ### 1. Requirements
-estimator should pass the [`check_estimator`](http://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html#sklearn.utils.estimator_checks.check_estimator)
-
-In any case, developers should endeavor to adhere to scikit-learn's
-[Contributor's Guide](http://scikit-learn.org/stable/developers/) which promotes
-the use of:
-* algorithm-specific unit tests, in addition to `check_estimator`'s common tests
-* [PEP8](https://www.python.org/dev/peps/pep-0008/)-compliant code
-* a clearly documented API using [NumpyDoc](https://github.com/numpy/numpydoc)
-  and [PEP257](https://www.python.org/dev/peps/pep-0257/)-compliant docstrings
-* references to relevant scientific literature in standard citation formats
-* [doctests](https://docs.python.org/3/library/doctest.html) to provide
-  succinct usage examples
 * standalone examples to illustrate the usage, model visualisation, and
   benefits/benchmarks of particular algorithms
-* efficient code when the need for optimization is supported by benchmarks
 
 ### 2. Modifying the Documentation
 
@@ -80,16 +67,6 @@ To build the documentation locally execute
 $ cd doc
 $ make html
 ```
-
-### 3. Setting up Travis CI
-[TravisCI](https://travis-ci.org/) allows you to continuously build and test
-your code from Github to ensure that no code-breaking changes are pushed. After
-you sign up and authourize TravisCI, add your new repository to TravisCI so that
-it can start building it. The `travis.yml` contains the configuration required
-for Travis to build the project. You will have to update the variable `MODULE`
-with the name of your module for Travis to test it. Once you add the project on
-TravisCI, all subsequent pushes on the master branch will trigger a Travis
-build. By default, the project is tested on Python 2.7 and Python 3.5.
 
 ### 4. Setting up Coveralls
 [Coveralls](https://coveralls.io/) reports code coverage statistics of your
