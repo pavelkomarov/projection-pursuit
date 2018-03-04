@@ -7,6 +7,7 @@ python:
 - 3.5
 install:
 - pip install numpy matplotlib scipy scikit-learn pytest coveralls
+# use coverage to run "pytest -s" as the main module (-m) using skpp as the code to measure (--source)
 script: coverage run --source=skpp -m pytest -s
 after_success:
   - coveralls

@@ -1,5 +1,14 @@
 """ Plotting the Projection Pursuit Transformation
 
+This example creates dummy data in three dimensions and a target one-dimensional
+Y, fit_transforms the X data with respect to the Y data by finding the best
+alpha (and other) projection vectors such that the output can be reconstructed
+and then returning X projected through those alphas, and then plots the original
+and transformed X on a 3D scatter plot.
+
+The dimension of the projected data will always be equal to r, the number of
+terms in the PPR model. Here the transformation reduces the dimensionality of X
+because r=2 while X lives in R^3.
 """
 import numpy as np
 from skpp import ProjectionPursuitRegressor
