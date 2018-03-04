@@ -68,14 +68,14 @@ $ cd doc
 $ make html
 ```
 
-### 4. Setting up Coveralls
+### 3. Setting up Coveralls
 [Coveralls](https://coveralls.io/) reports code coverage statistics of your
 tests on each push. Sign up on Coveralls and add your repository so that
 Coveralls can start monitoring it. The project already contains the required
 configuration for Coveralls to work. All subsequent builds after adding your
 project will generate a coverage report.
 
-### 5. Setting up Circle CI
+### 4. Setting up Circle CI
 The project uses [CircleCI](https://circleci.com/) to build its documentation
 from the `master` branch and host it using [Github Pages](https://pages.github.com/).
 Again,  you will need to Sign Up and authorize CircleCI. The configuration
@@ -100,56 +100,4 @@ If all goes well, you should be able to visit the documentation of your project
 on 
 ```
 https://github.com/USERNAME/DOC_REPO/DOC_URL
-```
-
-### 6. Uploading your package to PyPI
-
-Uploading your package to [PyPI](https://pypi.python.org/pypi) allows users to
-install your package through `pip`. Python provides two repositories to upload
-your packages. The [PyPI Test](https://testpypi.python.org/pypi) repository,
-which is to be used for testing packages before their release, and the
-[PyPI](https://pypi.python.org/pypi) repository, where you can make your
-releases. You need to register a username and password with both these sites.
-The username and passwords for both these sites need not be the same. To upload
-your package through the command line, you need to store your username and
-password in a file called `.pypirc` in your `$HOME` directory with the
-following format.
-
-```shell
-[distutils]
-index-servers =
-  pypi
-  pypitest
-
-[pypi]
-repository=https://pypi.python.org/pypi
-username=<your-pypi-username>
-password=<your-pypi-passowrd>
-
-[pypitest]
-repository=https://testpypi.python.org/pypi
-username=<your-pypitest-username>
-password=<your-pypitest-passowrd>
-```
-Make sure that all details in `setup.py` are up to date. To upload your package
-to the Test server, execute:
-```
-python setup.py register -r pypitest
-python setup.py sdist upload -r pypitest
-```
-Your package should now be visible on: https://testpypi.python.org/pypi
-
-To install a package from the test server, execute:
-```
-pip install -i https://testpypi.python.org/pypi <package-name>
-```
-
-Similary, to upload your package to the PyPI server execute
-```
-python setup.py register -r pypi
-python setup.py sdist upload -r pypi
-```
-To install your package, execute:
-```
-pip install <package-name>
 ```

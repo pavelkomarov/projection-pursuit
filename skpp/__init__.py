@@ -1,2 +1,2 @@
 
-from . import skpp
+from .skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
