@@ -726,7 +726,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			Y = Y.reshape(-1, 1)
 
 		# TODO: CategoricalEncoder coming in sklearn v0.20 can simplify this.
-		if Y.dtype.char == 'S' or Y.dtype.char == 'O' and isinstance(Y[0,0], str):
+		if Y.dtype.char in ['S', 'U', 'O']:
 			self._labeler = LabelEncoder()
 			Y = self._labeler.fit_transform(Y[:,0]).reshape(-1, 1)
 		else:
