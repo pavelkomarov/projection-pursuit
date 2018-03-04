@@ -8,7 +8,6 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils import as_float_array, check_random_state
 from matplotlib import pyplot
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-	# TODO: use CategoricalEncoder instead, coming in v0.20 of sklearn
 
 class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
 	""" Projection pursuit regression is a statistical model of the form:
@@ -104,65 +103,62 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 
 	Parameters
-		----------
-		`r` int, default=10:
-			The number of terms in the underlying additive model. The input will
-			be put through `r` projections, `r` functions of those projections,
-			and then multiplication by `r` output vectors to determine output.
+	----------
+	`r` int, default=10:
+		The number of terms in the underlying additive model. The input will be
+		put through `r` projections, `r` functions of those projections, and
+		then multiplication by `r` output vectors to determine output.
 
-		`fit_type` {'polyfit', 'spline'}, default='polyfit':
-			The kind of function to fit at each stage.
+	`fit_type` {'polyfit', 'spline'}, default='polyfit':
+		The kind of function to fit at each stage.
 
-		`degree` int, default=3:
-			The degree of polynomials or spline-sections used as the univariate
-			approximator between projection and .
+	`degree` int, default=3:
+		The degree of polynomials or spline-sections used as the univariate
+		approximator between projection and .
 
-		`opt_level` {'high', 'medium', 'low'}, default='high':
-			'low' opt_level will disable backfitting. 'medium' backfits
-			previous 2D functional fits only (not projections). 'high' backfits
-			everything.
+	`opt_level` {'high', 'medium', 'low'}, default='high':
+		'low' opt_level will disable backfitting. 'medium' backfits previous
+		2D functional fits only (not projections). 'high' backfits everything.
 
-		'weights' string or array-like, default='inverse-variance':
-			The relative importances given to output dimensions when calculating
-			the weighted residual (output of the univariate functions f_j). If
-			all dimensions are of the same importance, but outputs are of
-			different scales, then using the inverse variance is a good choice.
-			Possible values:
-				`'inverse-variance'`: Divide outputs by their variances.
-				`'uniform'`: Use a vector of ones as the weights.
-				`array`: Provide a custom vector of weights of dimension
-						 (n_outputs,)
+	'weights' string or array-like, default='inverse-variance':
+		The relative importances given to output dimensions when calculating the
+		weighted residual (output of the univariate functions f_j). If all
+		dimensions are of the same importance, but outputs are of different
+		scales, then using the inverse variance is a good choice.
+		Possible values:
+			`'inverse-variance'`: Divide outputs by their variances.
+			`'uniform'`: Use a vector of ones as the weights.
+			`array`: Provide a custom vector of weights of dimension (n_outputs,)
 
-		`eps_stage` float, default=0.001:
-			The mean squared difference between the predictions of the PPR at
-			subsequent iterations of a "stage" (fitting an f, beta pair) must
-			reach below this epsilon in order for the stage to be considered
-			converged.
+	`eps_stage` float, default=0.0001:
+		The mean squared difference between the predictions of the PPR at
+		subsequent iterations of a "stage" (fitting an f, beta pair) must reach
+		below this epsilon in order for the stage to be considered converged.
 
-		`eps_backfit` float, default=0.01:
-			The mean squared difference between the predictions of the PPR at
-			subsequent iterations of a "backfit" must reach below this epsilon
-			in order for backfitting to be considered converged.
+	`eps_backfit` float, default=0.01:
+		The mean squared difference between the predictions of the PPR at
+		subsequent iterations of a "backfit" must reach below this epsilon in
+		order for backfitting to be considered converged.
 
-		`stage_maxiter` int, default=100:
-			If a stage does not converge within this many iterations, end the
-			loop and move on. This is useful for divergent cases.
+	`stage_maxiter` int, default=100:
+		If a stage does not converge within this many iterations, end the loop
+		and move on. This is useful for divergent cases.
 
-		`backfit_maxiter` int, default=10:
-			If a backfit does not converge withint this many iterations, end
-			the loop and move on. Smaller values may be preferred here since
-			backfit iterations are expensive.
+	`backfit_maxiter` int, default=10:
+		If a backfit does not converge withint this many iterations, end the
+		loop and move on. Smaller values may be preferred here since backfit
+		iterations are expensive.
 
-		`random_state` int, numpy.RandomState, default=None:
-			An optional object with which to seed randomness.
+	`random_state` int, numpy.RandomState, default=None:
+		An optional object with which to seed randomness.
 
-		`show_plots` boolean, default=False:
-			Whether to produce plots of projections versus residual variance
-			throughout the training process.
+	`show_plots` boolean, default=False:
+		Whether to produce plots of projections versus residual variance
+		throughout the training process.
 
-		`plot_epoch` int, default=50:
-			If plots are displayed, show them every `plot_epoch` iterations
-			of the stage-fitting process.
+	`plot_epoch` int, default=50:
+		If plots are displayed, show them every `plot_epoch` iterations of the
+		stage-fitting process.
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
 				 weights='inverse-variance', eps_stage=0.0001, eps_backfit=0.01,
@@ -696,6 +692,18 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 		w_c = (S * pi_c / s_c) sum over k in [1,q] ( l_ck )
 
+	Parameters
+	----------
+	All the same as those to the constructor of ProjectPursuitRegressor, except:
+
+	`example_weights` array-like of dimension (n_samples,), default=None:
+		A vector of weights indicating the relative importance of samples.
+
+	`pairwise_loss_weights` array-like of dimension (n_classes, n_classes),
+		default=None: L[c,k] specifies the weight of the penalty of predicting
+		the answer is class k when it is actually class c. If unspecified, all
+		penalties are considered to have the same importance.
+
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
 				 example_weights=None, pairwise_loss_weights=None,
@@ -716,28 +724,42 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 				setattr(self, k, v)
 
 	def fit(self, X, Y):
+		""" Train the model.
+
+		Parameters
+		----------
+		`X` array-like of shape = (n_samples, n_features):
+			The training input samples.
+		`Y` array-like, shape = (n_samples,) or (n_samples, n_outputs)
+			The target values.
+
+		Returns
+		-------
+		self ProjectionPursuitClassifier:
+			A trained model.
+		"""
 		X, Y = check_X_y(X, Y)
-		 # required property for classifier. unique_labels also performs some
-		self.classes_ = unique_labels(Y)				# input validation.
+		 # classes_ property is required for sklearn classifiers. unique_labels
+		self.classes_ = unique_labels(Y) # also performs some input validation.
 
 		if Y.ndim == 2 and Y.shape[1] != 1:
 			raise ValueErorr('Only single column Y supported for classification.')
 		elif Y.ndim == 1:
 			Y = Y.reshape(-1, 1)
 
+		# Encode the input Y as a multi-column H.
 		# TODO: CategoricalEncoder coming in sklearn v0.20 can simplify this.
-		if Y.dtype.char in ['S', 'U', 'O']:
+		if Y.dtype.char in ['S', 'U', 'O']: # special handling for string types
 			self._labeler = LabelEncoder()
 			Y = self._labeler.fit_transform(Y[:,0]).reshape(-1, 1)
 		else:
 			self._labeler = None
+		self._encoder = OneHotEncoder() # can take numerical input
+		H = self._encoder.fit_transform(Y).A # .A gets the full numpy array
 
-		self._encoder = OneHotEncoder()
-		H = self._encoder.fit_transform(Y).A
-
-		# create the weights
+		# Calculate the weights
 		if self.example_weights == None and self.pairwise_loss_weights == None:
-			weights = 'uniform'
+			weights = 'uniform' # Just tell PPR to consider all the same.
 		# TODO
 		#elif pairwise_loss_weights == None:
 		#	weights = 
@@ -752,13 +774,26 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		return self
 
 	def predict(self, X):
+		""" Use the fitted estimator to make predictions on new data.
+
+		Parameters
+		----------
+		`X` array-like of shape = (n_samples, n_features):
+			The input samples.
+
+		Returns
+		-------
+		`Y` array of shape = (n_samples):
+			The result of passing X through the evaluation function, taking
+			the argmax of the output, and mapping it back to a class.
+		"""
 		check_is_fitted(self, '_ppr')
 		H = self._ppr.predict(X)
 		if H.ndim == 1:
 			H = H.reshape(-1, 1)
 
 		# argmax gives the index of the most likely class. Map back to the class
-		# itself with the encoder's active features array.
+		# itself with the encoder's active_features_ array.
 		numerical_classes = self._encoder.active_features_[numpy.argmax(H, axis=1)]
 		return self._labeler.inverse_transform(numerical_classes) if \
 			self._labeler else numerical_classes

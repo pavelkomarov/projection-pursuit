@@ -1,7 +1,7 @@
 # PPR
 [![Travis Status](https://travis-ci.org/pavelkomarov/projection-pursuit.svg?branch=master)](https://travis-ci.org/pavelkomarov/projection-pursuit)
-[![Coveralls Status](https://coveralls.io/repos/scikit-learn-contrib/project-template/badge.svg?branch=master&service=github)](https://coveralls.io/r/pavelkomarov/projection-pursuit)
-[![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/pavelkomarov/projection-pursuit/tree/master)
+[![Coveralls Status](https://coveralls.io/repos/pavelkomarov/projection-pursuit/badge.svg?branch=master&service=github)](https://coveralls.io/r/pavelkomarov/projection-pursuit)
+[![CircleCI Status](https://circleci.com/gh/pavelkomarov/projection-pursuit.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/pavelkomarov/projection-pursuit/tree/master)
 
 This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-compatible estimators based on Jerome Friedman's generalizations[1] of his and Werner Stuetzle's *Projection Pursuit Regression* algorithm[2][3]. A regressor capable of multivariate estimation and a classifier based on regression to a one-hot multivariate representation are included.
 

@@ -1,18 +1,17 @@
-"""
-============================
-Plotting Template Classifier
-============================
+""" Plotting ProjectionPursuitClassifier
 
-An example plot of :class:`skltemplate.template.TemplateClassifier`
+This example instantiates a classifier, trains it on only two points, queries
+the classifier at many points in between, and plots the result to visualize
+the decision boundary.
 """
 import numpy as np
-from skltemplate import TemplateClassifier
+from skpp import ProjectionPursuitClassifier
 from matplotlib import pyplot as plt
 
 
 X = [[0, 0], [1, 1]]
 y = [0, 1]
-clf = TemplateClassifier()
+clf = ProjectionPursuitClassifier()
 clf.fit(X, y)
 
 rng = np.random.RandomState(13)
@@ -34,6 +33,7 @@ leg = plt.legend([p0, p1, ax0, ax1],
                  loc='upper left', fancybox=True, scatterpoints=1)
 leg.get_frame().set_alpha(0.5)
 
+plt.title('Classifications of points between two training points.')
 plt.xlabel('Feature 1')
 plt.ylabel('Feature 2')
 plt.xlim([-.5, 1.5])

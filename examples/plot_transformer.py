@@ -1,26 +1,29 @@
-"""
-=============================
-Plotting Template Transformer
-=============================
+""" Plotting the Projection Pursuit Transformation
 
-An example plot of :class:`skltemplate.template.TemplateTransformer`
 """
 import numpy as np
-from skltemplate import TemplateTransformer
+from skpp import ProjectionPursuitRegressor
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-X = np.arange(50, dtype=np.float).reshape(-1, 1)
-X /= 50
-estimator = TemplateTransformer()
-X_transformed = estimator.fit_transform(X)
+X = np.random.uniform(size=(50, 3))
+Y = 50 - np.arange(50)
 
-plt.plot(X.flatten(), label='Original Data')
-plt.plot(X_transformed.flatten(), label='Transformed Data')
-plt.title('Plots of original and transformed data')
+estimator = ProjectionPursuitRegressor(r=2)
+X_transformed = estimator.fit_transform(X, Y)
 
-plt.legend(loc='best')
-plt.grid(True)
-plt.xlabel('Index')
-plt.ylabel('Value of Data')
+figure = plt.figure()
+axis = figure.gca(projection='3d')
 
+axis.scatter(X[:,0], X[:,1], X[:,2], c='b', s=10, label='original data')
+axis.scatter(X_transformed[:,0], X_transformed[:,1], np.zeros(50), c='r', s=10,
+	label='transformed data')
+axis.set_xlabel('x')
+axis.set_ylabel('y')
+axis.set_zlabel('z')
+
+plt.title('Original and transformed (projected) data in 3-space.\n' +
+	r'$\alpha_1 = {}^T$'.format(estimator._alpha[:,0].__repr__()[6:-1]) + '\n' +
+	r'$\alpha_2 = {}^T$'.format(estimator._alpha[:,1].__repr__()[6:-1]))
+plt.legend(loc=3)
 plt.show()
