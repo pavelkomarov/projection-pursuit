@@ -9,13 +9,15 @@ This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-com
 The package by itself comes with a single module containing the estimators. Before
 installing the module you will need `numpy` and `scipy`.
 To install the module execute:
+
 ```shell
-$ python setup.py install
-```
-or 
-```
 pip install projection-pursuit
 ```
+or
+```shell
+$ python setup.py install
+``` 
+
 If the installation is successful, and `scikit-learn` is correctly installed,
 you should be able to execute the following in Python:
 ```python

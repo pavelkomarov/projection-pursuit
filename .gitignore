@@ -1,5 +1,7 @@
 *.py[co]
 *~
-.pyc
 .pytest_cache/
 .cache/
+.coverage
+doctrees/
+html/
