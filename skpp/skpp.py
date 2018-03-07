@@ -3,9 +3,9 @@ from scipy.interpolate import UnivariateSpline
 from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin, \
 	ClassifierMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils import as_float_array, check_random_state
+from sklearn.utils import as_float_array, check_random_state, check_array
 from matplotlib import pyplot
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
@@ -699,17 +699,24 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 	`example_weights` array-like of dimension (n_samples,), default=None:
 		A vector of weights indicating the relative importance of samples.
 
-	`pairwise_loss_weights` array-like of dimension (n_classes, n_classes),
-		default=None: L[c,k] specifies the weight of the penalty of predicting
-		the answer is class k when it is actually class c. If unspecified, all
-		penalties are considered to have the same importance.
-
+	`pairwise_loss_matrix` array-like of dimension (n_classes, n_classes),
+		default=None: The adjacency matrix L has entries L[c,k] specifying the
+		weight of the penalty of predicting the answer is class k when it is
+		actually class c. If unspecified, all penalties are considered to have
+		the same importance.
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
-				 example_weights=None, pairwise_loss_weights=None,
+				 example_weights=None, pairwise_loss_matrix=None,
 				 eps_stage=0.0001, eps_backfit=0.01, stage_maxiter=100,
 				 backfit_maxiter=10, random_state=None, show_plots=False,
 				 plot_epoch=50):
+
+		# Do parameter checking for parameters that will not be checked when
+		# the inner PPR model is constructed.
+		if example_weights is not None:
+			example_weights = check_array(example_weights)
+		if pairwise_loss_matrix is not None:
+			pairwise_loss_matrix = check_array(pairwise_loss_matrix)
 		
 		# sklearn's clone() works by calling get_params, which calls get_param_
 		# names to crawl the constructor and find out which parameters are
@@ -739,13 +746,19 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			A trained model.
 		"""
 		X, Y = check_X_y(X, Y)
-		 # classes_ property is required for sklearn classifiers. unique_labels
-		self.classes_ = unique_labels(Y) # also performs some input validation.
+
+		if self.example_weights is not None and self.example_weights.shape[0] \
+			!= Y.shape[0]:
+			raise ValueError('If weighting examples, then n_examples needs ' + \
+				'to match the length of example_weights from construction.')
 
 		if Y.ndim == 2 and Y.shape[1] != 1:
 			raise ValueErorr('Only single column Y supported for classification.')
 		elif Y.ndim == 1:
 			Y = Y.reshape(-1, 1)
+
+		# classes_ property is required for sklearn classifiers. unique_labels
+		self.classes_ = unique_labels(Y) # also performs some input validation.
 
 		# Encode the input Y as a multi-column H.
 		# TODO: CategoricalEncoder coming in sklearn v0.20 can simplify this.
@@ -758,12 +771,22 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		H = self._encoder.fit_transform(Y).A # .A gets the full numpy array
 
 		# Calculate the weights
-		if self.example_weights == None and self.pairwise_loss_weights == None:
+		if self.example_weights == None and self.pairwise_loss_matrix == None:
 			weights = 'uniform' # Just tell PPR to consider all the same.
-		# TODO
-		#elif pairwise_loss_weights == None:
-		#	weights = 
-		#elif
+		else:
+			if self.example_weights != None:
+				pi_c = np.sum(H, axis=0, dtype=np.float64) # find pi_c for all c
+				s_c = np.dot(self.example_weights, H) # find s_c for all c
+				ew = pi_c / s_c
+			else:
+				ew = np.ones(H.shape[1])
+
+			if self.pairwise_loss_matrix != None:
+				pl = np.sum(pairwise_loss_matrix, axis=0)
+			else:
+				pl = np.ones(H.shape[1])
+
+			weights = ew * pl
 
 		self._ppr = ProjectionPursuitRegressor(self.r, self.fit_type,
 			self.degree, self.opt_level, weights, self.eps_stage,

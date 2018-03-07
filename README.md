@@ -40,39 +40,11 @@ TODO:
 * standalone examples to illustrate the usage, model visualisation, and
   benefits/benchmarks of particular algorithms
 
-### 2. Modifying the Documentation
 
-The documentation is built using [sphinx](http://www.sphinx-doc.org/en/stable/).
-It incorporates narrative documentation from the `doc/` directory, standalone
-examples from the `examples/` directory, and API reference compiled from
-estimator docstrings.
-
-To build the documentation locally, ensure that you have `sphinx`,
-`sphinx-gallery` and `matplotlib` by executing:
-```shell
-$ pip install sphinx matplotlib sphinx-gallery
-```
-The documentation contains a home page (`doc/index.rst`), an API
-documentation page (`doc/api.rst`) and a page documenting the `template` module 
-(`doc/template.rst`). Sphinx allows you to automatically document your modules
-and classes by using the `autodoc` directive (see `template.rst`). To change the
-asthetics of the docs and other paramteres, edit the `doc/conf.py` file. For
-more information visit the [Sphinx Documentation](http://www.sphinx-doc.org/en/stable/contents.html).
-
-You can also add code examples in the `examples` folder. All files inside
-the folder of the form `plot_*.py` will be executed and their generated
-plots will be available for viewing in the `/auto_examples` URL.
-
-To build the documentation locally execute
-```shell
-$ cd doc
-$ make html
-```
-
-### 3. Setting up Circle CI
+### 2. Setting up Circle CI
 The project uses [CircleCI](https://circleci.com/) to build its documentation
 from the `master` branch and host it using [Github Pages](https://pages.github.com/).
-Again,  you will need to Sign Up and authorize CircleCI. The configuration
+Again, you will need to Sign Up and authorize CircleCI. The configuration
 of CircleCI is governed by the `circle.yml` file, which needs to be mofified
 if you want to setup the docs on your own website. The values to be changed
 are
