@@ -295,8 +295,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 					', which disagrees with the size of X: ' + str(X.shape[0]))
 			else:
 				self._example_weights = self.example_weights
-		#self._example_weights /= numpy.linalg.norm(self._example_weights)
-		#print self._example_weights
 
 		if self.out_dim_weights == 'inverse-variance':
 			variances = Y.var(axis=0)
@@ -316,7 +314,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 					' have dimension ' + str(self.out_dim_weights.shape[0]) +
 					', which disagrees with the width of Y: ' + str(Y.shape[1]))
 			else:
-				self._out_dim_weights = self._out_dim_weights
+				self._out_dim_weights = self.out_dim_weights
 
 		# Now that input and output dimensions are known, parameters vectors
 		# can be initialized. Vectors are always stored vertically.
@@ -402,7 +400,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			targets = numpy.dot(R_j, beta_j_w) / (
 					  numpy.inner(self._beta[:, j], beta_j_w) + 1e-9)
 			# Find the function that best fits the targets against projections.
-			#print "targets", targets
 			self._f[j], self._df[j] = self._fit_2d(p_j, targets, j, itr)
 			
 			# Got that? Now use g + calculus again to optimize for beta:
@@ -429,7 +426,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			f = self._f[j](p_j) # Find the n x 1 vector of function outputs.
 			f_w = self._example_weights*f # f weighted by examples
 			self._beta[:, j] = numpy.dot(R_j.T, f_w) / (numpy.inner(f, f_w) + 1e-9)
-			#print "beta", self._beta[:, j]
 
 			# Now for the hard stuff. The alpha vector isn't like the other
 			# parameters because it is inside the function f, so the approach
@@ -528,7 +524,6 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				alpha = self._alpha[:, j] + delta
 				# normalize to avoid numerical drift
 				self._alpha[:, j] = alpha/numpy.linalg.norm(alpha)
-				#print "alpha", self._alpha[:, j]
 
 			# Recalculate the jth projection with new f_j and alpha_j
 			p_j = numpy.dot(X, self._alpha[:, j])
@@ -600,7 +595,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		"""
 		if self.fit_type == 'polyfit':
-			coeffs = numpy.polyfit(x, y, deg=self.degree)#, w=self._example_weights)
+			coeffs = numpy.polyfit(x, y, deg=self.degree, w=self._example_weights)
 			fit = numpy.poly1d(coeffs)
 			deriv = fit.deriv(m=1)
 		elif self.fit_type == 'spline':
@@ -743,14 +738,14 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		the same importance.
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
-				 example_weights=None, pairwise_loss_matrix=None,
+				 example_weights='uniform', pairwise_loss_matrix=None,
 				 eps_stage=0.0001, eps_backfit=0.01, stage_maxiter=100,
 				 backfit_maxiter=10, random_state=None, show_plots=False,
 				 plot_epoch=50):
 
 		# Do parameter checking for parameters that will not be checked when
 		# the inner PPR model is constructed.
-		if example_weights is not None:
+		if example_weights is not 'uniform':
 			example_weights = as_float_array(example_weights)
 		if pairwise_loss_matrix is not None:
 			pairwise_loss_matrix = as_float_array(pairwise_loss_matrix)
@@ -784,8 +779,8 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		"""
 		X, Y = check_X_y(X, Y)
 
-		if self.example_weights is not None and self.example_weights.shape[0] \
-			!= Y.shape[0]:
+		if self.example_weights is not 'uniform' and \
+			self.example_weights.shape[0] != Y.shape[0]:
 			raise ValueError('If weighting examples, then n_examples needs ' + \
 				'to match the length of example_weights from construction.')
 
@@ -808,7 +803,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		H = self._encoder.fit_transform(Y).A # .A gets the full numpy array
 
 		# Calculate the weights
-		if self.example_weights is not None:
+		if self.example_weights is not 'uniform':
 			pi_c = numpy.sum(H, axis=0, dtype=numpy.float64) # find pi_c for all c
 			s_c = numpy.dot(self.example_weights, H) # find s_c for all c
 			w_ex = s_c / (pi_c + 1e-9) # column weights due to example weights
@@ -820,11 +815,11 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		else:
 			w_pl = numpy.ones(H.shape[1])
 
-		print w_ex*w_pl
 		self._ppr = ProjectionPursuitRegressor(self.r, self.fit_type,
-			self.degree, self.opt_level, w_ex*w_pl, self.eps_stage,
-			self.eps_backfit, self.stage_maxiter, self.backfit_maxiter,
-			self.random_state, self.show_plots, self.plot_epoch)
+			self.degree, self.opt_level, self.example_weights, w_ex*w_pl,
+			self.eps_stage, self.eps_backfit, self.stage_maxiter,
+			self.backfit_maxiter, self.random_state, self.show_plots,
+			self.plot_epoch)
 
 		self._ppr.fit(X, H)
 		return self
