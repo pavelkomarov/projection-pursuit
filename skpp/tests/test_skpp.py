@@ -50,7 +50,7 @@ def test_ppr_learns():
 	testing = temp[int(n*0.8):]
 
 	estimator = ProjectionPursuitRegressor(r=20, fit_type='polyfit', degree=3,
-		opt_level='high', weights='inverse-variance')
+		opt_level='high')
 
 	print('Average magnitude of squared Y per element', numpy.sum(Y**2)/Y.size)
 
