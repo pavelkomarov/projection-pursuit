@@ -3,5 +3,8 @@
 .pytest_cache/
 .cache/
 .coverage
+*.aux
+*.out
+*.log
 doctrees/
 html/

@@ -10,98 +10,7 @@ from matplotlib import pyplot
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
-	""" Projection pursuit regression is a statistical model of the form:
-
-		y_i = sum j=1 to r (f_j(x_i*alpha_j) * beta_j')
-
-	where:
-		i iterates examples, the rows of input and output matrices
-		j iterates the number of terms in the PPR "additive model"
-		r is the total number of projections and functions in the PPR
-		y_i is a d-dimensional vector, the ith row in an output matrix Y
-		x_i is a p-dimensional vector, the ith row of an input matrix X
-		alpha_j is the jth projection vector in the mdoel, a p-dimensional
-			vector inner-producted with x_i
-		f_j is the jth function in the model, mapping from R1 -> R1
-		beta_j' is the transpose of beta_j, a d-dimensional vector outer-
-			producted with the result of f_j to yield a result in the output
-			space
-		* is a product, the inner product for x_i*alpha_j, the outer product
-			for f_j * beta_j'
-
-	This may seem very complicated, but the idea is simple:
-		1. Linearly project the input down to one dimension where it is easier
-			to work with, thereby sidestepping the curse of dimensionality.
-		2. Find a sensible nonlinear mapping from this reduced space to
-			"residuals", linear combinations of variance in the output.
-		3. Unpack from the single-dimensional residual space to the output space
-			with a kind of inverse projection.
-
-	In practice a single projection-mapping-expansion is not descriptive enough
-	to capture the richness of what may be a very complicated underlying
-	relationship between X and Y, so it is repeated r times, each new "stage"
-	only accounting for the variance left unexplained by the stages that have
-	come before. Notice that, as per Taylor's Theorem and the no-doubt familiar
-	universal approximation theorems, for certain classes of functions f, as r
-	goes to infinity the evaluation function can approximate any continuous
-	functional relationship between inputs and outputs.
-
-	
-	The (supervised) learning process consists of minimizing a standard
-	quadratic cost function:
-
-		sum i=1 to n w_i*(y_i - ^y_i)^2
-
-	where:
-		i iterates all training examples
-		n is the total number of training examples
-		w_i the weigth of the ith example
-		y_i is the known answer for example i
-		^y_i ("y-i-hat") is the answer predicted by the model for example i
-
-	In words: get as close as you can for all examples. (TODO: There should
-	maybe be some regularization here too.)
-
-	Plugging the evaluation function in to the cost function yields a
-	relationship between model parameters and cost or "loss". Because there
-	are multiple dimensions in y_i, we introduce a sum over them so the PPR
-	is motivated to make good predictions for all entries of the vector output:
-
-		loss = sum i=1 to n (
-			w_i * sum k=1 to d (
-				w_k * (y_ik - sum j=1 to r (
-					f_j(x_i*alpha_j) * beta_jk ))^2 ))
-
-	where this new fauna:
-		k iterates the columns of the output Y
-		d is the number of outputs, the width of the output matrix Y
-		w_k is a scalar weight, the relative importance of the kth output
-			dimension
-		y_ik is the scalar kth entry in the vector y_i, itself the ith row of Y
-		beta_jk is the scalar kth entry of beta_j from the evaluation function
-
-	The parameters we need to optimize to make the PPR "learn" are alpha_j, f_j,
-	and beta_j. w_k are hyperparamters chosen by the user, just as r is chosen.
-
-
-	The optimization scheme to solve for so many different paramters is
-	non-obvious but straightforward:
-		1. Initialize all alpha_j, f_j and beta_j to something random. Let j=1. 
-		2. Find the "residual" variance undexplained by all stages fit so far.
-		3. Project the input in to single dimension: X*alpha_j.
-		4. Fit f_j to a weighted residual target versus projections.
-		5. Use this f_j to find a better setting for beta_j.
-		6. Use a Gauss-Newton scheme to solve for an update to alpha_j.
-		7. Repeat steps 3-6 until f_j, beta_j, and alpha_j converge.
-		8. (optional) Use the newly converged parameters to retune all previous
-			f_j, beta_j, alpha_j where j < k. (backfitting)
-		8. Increment j and go back to step 2 until j reaches r.
-
-	This is a form of alternating optimization, wherein all parameters except
-	one are held constant, the best setting for that parameter given those
-	constants is found, and the process cycled through all parameters until
-	convergence.
-
+	""" This class implements the PPR algorithm as detailed in math.pdf.
 
 	Parameters
 	----------
@@ -372,6 +281,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		# few iterations causes loss to momentarily increase.
 		while (abs(prev_loss - loss) > self.eps_stage and itr < self.stage_maxiter):			
 			# To understand how to optimize each set of parameters assuming the
+			# others remain constant, see math.pdf.
 			# others remain constant, let
 			#
 			#	g = w(r - f*b)^2
