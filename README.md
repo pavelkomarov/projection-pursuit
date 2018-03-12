@@ -34,14 +34,18 @@ you should be able to execute the following in Python:
 
 
 
+
+
+
+
+
 TODO:
 
-### 1. Requirements
-* standalone examples to illustrate the usage, model visualisation, and
-  benefits/benchmarks of particular algorithms
+### 1. Example of training process with model visualization + benefits/benchmarks
 
+### 2. Make Sphinx output prettier and host somewhere
 
-### 2. Setting up Circle CI
+### 3. Setting up Circle CI
 The project uses [CircleCI](https://circleci.com/) to build its documentation
 from the `master` branch and host it using [Github Pages](https://pages.github.com/).
 Again, you will need to Sign Up and authorize CircleCI. The configuration
