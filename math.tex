@@ -314,13 +314,13 @@ $$y_i = \argmax_c h_{ci} $$
 
 That is: the index of the column where the largest value in the $i$th row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
-And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model paramters.
+And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model parameters.
 
-Fortunately, Friedman assures us (and experiment bears out) that using the quatratic loss function as used for multivariate regression is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
+Fortunately, Friedman assures us (and experiment bears out) that using the quatratic loss function is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
 
 $$w_c = \frac{s_c}{S \pi_c} \sum_{k \in [1,q]} l_{ck}$$
 
-Since weights are relative the constant $S$ and the normalization by the constant $n$ in the calculation of $\pi_c$ can be dropped to yeild:
+Since weights are relative, the constant $S$ and the normalization by the constant $n$ in the calculation of $\pi_c$ can be dropped to yeild:
 
 $$w_c = \frac{\sum_{i=1}^n w_i h_{ci}}{\sum_{i=1}^n h_{ci}} \sum_{k \in [1,q]} l_{ck}$$
 

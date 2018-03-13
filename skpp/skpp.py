@@ -92,7 +92,10 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		if opt_level not in ['low', 'medium', 'high']:
 			raise ValueError('opt_level must be either low, medium, or high.')
 		if example_weights is not 'uniform':
-			example_weights = as_float_array(example_weights)
+			try:
+				example_weights = as_float_array(example_weights)
+			except (TypeError, ValueError) as error:
+				raise ValueError('example_weights must be uniform, or array-like.')
 			if numpy.any(example_weights < 0):
 				raise ValueError('example_weights can not contain negatives.')
 		if out_dim_weights not in ['inverse-variance', 'uniform']:
@@ -435,10 +438,16 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		# Do parameter checking for parameters that will not be checked when
 		# the inner PPR model is constructed.
 		if example_weights is not 'uniform':
-			example_weights = as_float_array(example_weights)
+			try:
+				example_weights = as_float_array(example_weights)
+			except (ValueError, TypeError) as error:
+				raise ValueError('example_weights must be uniform or array-like.')
 		if pairwise_loss_matrix is not None:
-			pairwise_loss_matrix = as_float_array(pairwise_loss_matrix)
-		
+			try:
+				pairwise_loss_matrix = as_float_array(pairwise_loss_matrix)
+			except (ValueError, TypeError) as error:
+				raise ValueError('pairwise_loss_matrix must be None or array-like.')
+
 		# sklearn's clone() works by calling get_params, which calls get_param_
 		# names to crawl the constructor and find out which parameters are
 		# necessary to reconstruct the model without its data, and then calling
