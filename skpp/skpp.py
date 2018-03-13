@@ -260,11 +260,10 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		"""
 		# projections P = X*Alphas, P_j = X*alpha_j
 		P = self.transform(X) # the n x r projections matrix
-		# residuals matrix for the jth term R_j =
-		#	Y - sum t=1 to r but =/= j ( f(P_t) * beta_t' )
-		# Essentially, take the evaluation function, separate out the
-		# contribution of the jth term, and algebraically solve for it by
-		# subtracting the rest of the sum from both sides.
+		# The residuals matrix is essentially the evaluation function separated
+		# in to the contribution of this term vs all the others and then
+		# algebraically solved for this term's contribution by subtracting the
+		# rest of the sum from both sides.
 		R_j = Y - sum([numpy.outer(self._f[t](P[:, t]), self._beta[:, t].T) for t 
 			in range(self.r) if t is not j]) # the n x d residuals matrix
 
@@ -281,142 +280,21 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		# few iterations causes loss to momentarily increase.
 		while (abs(prev_loss - loss) > self.eps_stage and itr < self.stage_maxiter):			
 			# To understand how to optimize each set of parameters assuming the
-			# others remain constant, see math.pdf.
-			# others remain constant, let
-			#
-			#	g = w(r - f*b)^2
-			#
-			# be the weighted squared term from inside the sums of the loss
-			# function in simplified form.
-			#
-			# Use good ol' calculus to optimize for f:
-			#
-			#	dg/df = 2w(r-f*b)*-b = 0 -> -2wrb + 2fw(b^2) = 0
-			#			-> f* = wrb/(w(b^2))
-			#
-			#	Remember b is actually a beta vector here, so b/(b^2) isn't
-			#	really just b. And we can't be hasty to cancel w either.
-			#
-			#	The full expression for the optimal mapping of the jth f* at the
-			#	ith point becomes:
-			#
-			#		f*_j(x_i*alpha_j) = sum k=1 to d (w_k*beta_jk*r_ijk) /
-			#							sum k=1 to d (w_k*beta_jk^2)
-			#						  = a weighted residual target
-			#
-			#		where r_ijk is R_j[i, k]
-			#R_j_w = (R_j.T * self._example_weights).T # weighted residuals
+			# others remain constant, see math.pdf section 3.
+			
+			# find the f_j
 			beta_j_w = self._out_dim_weights*self._beta[:, j] # weighted beta
 			targets = numpy.dot(R_j, beta_j_w) / (
 					  numpy.inner(self._beta[:, j], beta_j_w) + 1e-9)
 			# Find the function that best fits the targets against projections.
 			self._f[j], self._df[j] = self._fit_2d(p_j, targets, j, itr)
 			
-			# Got that? Now use g + calculus again to optimize for beta:
-			#
-			#	dg/db = 2w(r-f*b)*-f = 0 -> -2wrf + 2w(f^2)b = 0
-			#			-> b* = wrf/(w(f^2))
-			#
-			#	Once again, f is actually a vector of output values at many
-			#	points, so f/(f^2) isn't really just f.
-			#
-			#	The full expression for the optimal jth beta vector's kth entry
-			#	becomes:
-			#
-			#		beta*_jk = sum i=1 to n (w_k*r_ijk*f_j(x_i*alpha_j)) /
-			#				   sum i=1 to n (w_k*f_j(x_i*alpha_j)^2)
-			#
-			#	Here w_k actually does cancel because there is no sum over k.
-			#	Doing this and vectorizing to get rid of the sum over i yields:
-			#
-			#		beta*_jk = r_jk' * f_j(X*alpha_j) /
-			#				   f_j(X*alpha_j)' * f_j(X*alpha_j)
-			#
-			#		where r_jk' is the transpose of r_jk, the kth column of R_j.
+			# find beta_j
 			f = self._f[j](p_j) # Find the n x 1 vector of function outputs.
 			f_w = self._example_weights*f # f weighted by examples
 			self._beta[:, j] = numpy.dot(R_j.T, f_w) / (numpy.inner(f, f_w) + 1e-9)
 
-			# Now for the hard stuff. The alpha vector isn't like the other
-			# parameters because it is inside the function f, so the approach
-			# taken to optimize the last two parameter sets does not apply.
-			#
-			# Thankfully, there is a way. Let
-			#
-			#	g(a) = r - f(a)*b
-			#
-			# or in more detailed, properly subscripted, and vectorized form
-			# (so the sum over i disapears):
-			#
-			#	g_jk(alpha_j) = r_jk - f_j(X*alpha_j) * beta_jk
-			#
-			# where g is subscripted by j for belonging to the jth stage of the
-			# additive model and a k for belonging to the kth output dimension,
-			# r_jk is the kth column of the residual matrix for the jth stage
-			# R_j, and beta_jk is the scalar kth element of beta_j.
-			#
-			# Now consider the form of the loss function expressed in this form:
-			#
-			#	sum k=1 to d ( g_jk(a) )^2
-			#
-			# There is a method to solve such problems called Gauss-Newton!
-			# The canonical solution is a generalization of Newton's method:
-			#
-			#	a_next = a - pinv(J)*g(a)
-			#
-			# where pinv is the pseudoinverse (J'*J)^-1 * J', and J is the
-			# Jacobian matrix of g. Here it's a little more complicated because
-			# there are d  (n_outputs) different g_jk functions, but we do need
-			# to define the Jacobian for the kth one:
-			#
-			#	J_k[u,v] = dg_jk[u](a) / da[v]
-			#
-			# That is: The entry at the (u, v)th location of J_k is the partial
-			# derivative of the uth entry of g_jk with respect to the vth element
-			# of a evaluated at the current a.
-			#
-			# Some time with a piece of paper yields:
-			#
-			#	g_jk(alpha_j)[u] = r_jk - f_j(x_u*alpha_j) * beta_jk
-			#	-> dg_jk[u](a) / da[v] = -df_j(x_u*alpha_j) * beta_jk * x_uv
-			#
-			#	where x_u is the uth row of X. Basically for the derivative just
-			#	drop the constant vector r_jk and multiply by the constan
-			#	coefficient of alpha_j[v] = X[u, v]
-			#
-			#	J_k = [ -df_j(x_0*alpha_j)*   -df_j(x_0*alpha_j)*             ]
-			#		  [       beta_jk*x_00          beta_jk*x_01      ...     ]
-			#		  [                                                       ]
-			#		  [ -df_j(x_1*alpha_j)*   -df_j(x_1*alpha_j)*             ]
-			#		  [       beta_jk*x_10          beta_jk*x_11      ...     ]
-			#		  [                                                       ]
-			#		  [       ...                   ...                       ]
-			#		  [                                     -df(x_n*alpha_j)* ]
-			#		  [                                         beta_jk*x_np  ]
-			#
-			#	= -beta_jk.*[ ---df_j(x_0*alpha_j).*x_0--- ]
-			#				[ ---df_j(x_1*alpha_j).*x_1--- ]
-			#				[              ...             ]
-			#				[ ---df_j(x_n*alpha_j).*x_n--- ]
-			#
-			#	= -beta_jk.*df_j(X*alpha_j).*w O* X
-			#
-			#	where .* is the pointwise product of a matrix or vector with a
-			#	scalar, and O* means the Hadamard product of the n-vector to the
-			#	left with each of the p columns of the n x p matrix to the right.
-			#
-			# Great, so now let's update alpha. Unpacking the canonical update
-			# and accounting for the weights yields the corresponding least-
-			# squares problem:
-			#
-			#	sum k=1 to d (w_k.*J_k'*J_k) * delta = -sum k=1 to d (w_k J_k'*g_jk)
-			#
-			# where g_jk is the vector values of the function g_jk evaluated at
-			# the current alpha_j, and delta is a_next - a, the update to alpha.
-			#
-			# Let 	A = sum k=1 to d (w_k.*J_k'*J_k)
-			#		b = -sum k=1 to d (w_k.*J_k'*g_jk)
-			# and solve A*delta = b with a least-squares solver.
+			# find alpha_j
 			if fit_weights:
 				# Find the part of the Jacobians that is common to all
 				J = -(self._df[j](p_j)*numpy.sqrt(self._example_weights)*X.T).T
@@ -533,106 +411,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 
 class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
-	""" Perform classification with projection pursuit. Let risk R be
-
-		R = sum i=1 to n (
-			min over k in [1,q] (
-				sum over c=1 to q (
-					l_ck * p(c | x_i) )))
-
-	where
-		i iterates over examples
-		q is the total number of classes in the problem
-		min over k implements the optimal decision rule for each example
-		l_ck is the user-specified loss for predicting y=k when in truth y=c
-		the inner sum is the total loss for predicting y=k
-		and p(c | x_i) is the true probability y=c given input x_i
-
-	The unknown here is that conditional probability. If we define an indicator
-	variable
-
-		h_ci = 1 if y_i=c, 0 otherwise
-
-	then the conditional probability can be rewritten as
-
-		p(c | x_i) = (pi_c * S / s_c) * E[h_c | x_i]
-
-	where
-		pi_c is the prior probability that y=c (h_c=1), calculable from the
-			training set with |num examples where y=c|/|total num examples|
-		s_c = sum i=1 to n (w_i*h_ci), the cumulative weight of examples with
-			classification c
-		S = sum c=1 to q (s_c), the cumulative weight of everything, a constant
-		E means the expected value
-		h_c is the vector of h_ci values for all i
-
-	Notice that if the weights w_i in s_c are uniform (so no example is
-	considered any more important than any other), then pi_c = s_c/S, and all
-	those terms cancel. Additionally, l_ck is often simplified as
-
-		l_ck = 1 if c=/=k, 0 if c==k
-
-	So put it all together:
-
-		R = sum i=1 to n (
-			min over k in [1,q] (
-				S * sum over c=1 to q (
-					(pi_c * l_ck / s_c) * E[h_c | X] )))
-
-	With the simplifying assumptions that all examples are equally important
-	and misclassification is equally bad between all class pairs:
-
-		R = sum i=1 to n (
-			min over k in [1,q] (
-				sum over c=/=k ( E[h_c | X] )))
-
-	Or equivalently:
-
-		R = sum i=1 to n (
-			max over k in [1,q] ( E[h_c | X] ))
-
-	because the sum is minimized by excluding the largest expectation.
-
-	Now, recognize E[h_c | X] is a vector, h_c, of the values E[h_ci | x_i], and
-	for training data the expectation that h_ci has a given value given x_i is
-	known to be either a one or a zero.
-
-	Further, recognize that stacking h_c for all classes c together as columns
-	yields H, a one-hot representation of the true classifications Y. That is:
-
-		Y = [ 1 ]				H = [ 0 1 0 0 ]
-			[ 0 ]					[ 1 0 0 0 ]
-			[ 2 ]					[ 0 0 1 0 ]
-			[ . ]					[   ...   ]
-			[ . ]					[   ...   ]
-			[ 3 ]					[ 0 0 0 1 ]
-
-	And now we can model H with a multivariate PPR model, where we take the
-	predicted class of examples to be:
-
-		y_i = argmax over c ( h_ci )
-
-	That is: the index of the column where the largest value in the ith row of
-	the predicted H, ^H, is located. If Y is filled with generalized categories
-	rather than numbers, then categoricals can be assigned numbers for the
-	construction of H, and argmaxes can be translated back at prediction-time.
-
-	Training the model to make these predictions should ideally involve
-	optimizing the the misclassification risk as the loss function, but that
-	max over k in [1,q] makes the risk nonconvex, which means we can no longer
-	employ the methods detailed in the alternating optimization loop of
-	ProjectionPursuitRegressor's _fit_stage to find model parameters.
-
-	But Friedman assures us that using the same L2 sum-of-squares loss function
-	as used for multivariate regression is acceptable, and if we wish to account
-	for examples being of differing importances or specify a funky non-uniform
-	pairwise loss scheme, all we have to do is use weights:
-
-		w_c = (S * pi_c / s_c) sum over k in [1,q] ( l_ck )
-
-	S/s_c can be interpreted as the inverse weighted relative probability of
-	class c, and pi_c
-
+	""" Perform classification with projection pursuit.
 
 	Parameters
 	----------

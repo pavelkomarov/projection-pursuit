@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{hyperref}
+\DeclareMathOperator*{\argmax}{argmax}
 \begin{document}
 
 \title{The Gory Details}
@@ -11,7 +12,7 @@
 
 Here lies a full explanation of how multivariate Projection Pursuit Regression (PPR) and univariate Classification work, to the degree I currently understand. It is as much for me as for you, because I much prefer my own notation, and every time I have to dig in to the bones of the code and faff with the loss function, I end up having to refer to \href{http://www.slac.stanford.edu/cgi-wrap/getdoc/slac-pub-3824.pdf}{the original paper}'s somewhat ambiguous, derivationless equations. Formerly I was attempting to deposit some of this knowledge in code comments, but they took up too much space while somehow remaining marvelously unreadable.
 
-This is all in \LaTeX  because \href{https://github.com/github/markup/issues/897}{native math in markdown is amazingly still not supported by github}, so a \texttt{.md} would really be no less uncomfortable than code comments. If you happen to want to know how I accomplished all this formatting, the source \texttt{.tex} is also in this directory and can be compiled with \texttt{pdflatex}.
+This is all in \LaTeX\ because \href{https://github.com/github/markup/issues/897}{native math in markdown is amazingly still not supported by github}, so a \texttt{.md} would really be no less uncomfortable than code comments. If you happen to want to know how I accomplished all this formatting, the source \texttt{.tex} is also in this directory and can be compiled with \texttt{pdflatex}.
 
 I attempt to follow a structure based on the \href{http://lmgtfy.com/?q=sorry+this+link+doesn\%27t+work+yet+I+still+have+to+post+those+slides}{five components of any machine learning algorithm}:
 
@@ -142,7 +143,7 @@ $$\frac{\partial L_j}{\partial \beta_{jk'}} = \sum_{i=1}^n w_i w_{k'} [2(r_{ijk'
 
 Notice that the sum over $k$ disappears because no term where $k \neq k'$ will contain our variable $\beta_{jk'}$, so for the purposes of differentiation they are constant, and the derivative of constants is zero. Only the weight $w_{k'}$ remains.
 
-Also, I've been using $\otimes$ for consistency, but since $\beta_jk$ is scalar, it's nothing special, just an ordinary multiplication. So we can do some algebra:
+Also, I've been using $\otimes$ for consistency, but since $\beta_{jk'}$ is scalar, an outer product is nothing special, just an ordinary multiplication. So we can do some algebra:
 
 $$ -2 w_{k'} \sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})] + 2 w_{k'} \beta_{jk'} \sum_{i=1}^n w_i [f_j^2(\vec{x_i} \cdot \vec{\alpha_j})] = 0 $$
 
@@ -152,14 +153,14 @@ This can be vectorized to find all entries of $\vec{\beta_j}$ at once. Notice th
 
 $$ \vec{\beta_j} = \frac{\pmb{R}_j^T \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j)}$$
 
-where $\odot$ is a Hadamard product, and the sum disappears inside the inner products.
+where $\odot$ is a Hadamard product, and the sums disappear inside the inner products.
 
 \subsection{Optimizing $f_j$ Given $\vec{\alpha_j}$ and $\vec{\beta_j}$}
 
-Now a similar argument, but this time consider the parameter of interest to be $f_i'j$, the $i$th entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f$ to each entry.
+Now a similar argument, but this time consider the parameter of interest to be $f_{i'j}$, the $i$th entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f$ to each entry.
 
 
-$$\frac{\partial L_j}{\partial f_{i'j}} = \sum_{k=1}^d w_k w_{i'} [2(r_{i'jk} - f_{i'j} \otimes \beta_{jk'})(-\beta_{jk})] = 0$$
+$$\frac{\partial L_j}{\partial f_{i'j}} = \sum_{k=1}^d w_k w_{i'} [2(r_{i'jk} - f_{i'j} \otimes \beta_{jk})(-\beta_{jk})] = 0$$
 
 The sum over $i$ disappears because only the single term where $i=i'$ isn't constant to the derivative.
 
@@ -171,11 +172,11 @@ $$\rightarrow f_{i'j} = \frac{\sum_{k=1}^d w_k r_{i'jk} \beta_{jk}}{\sum_{k=1}^d
 
 As in the case of $\vec{\beta_j}$, this can be vectorized.
 
-$$ f_j(\pmb{X} \cdot \vec{\alpha_j}) = \frac{\pmb{R} \cdot (\vec{w_K} \odot \vec{\beta_j})}{\vec{\beta_j} \cdot (\vec{w_K} \odot \vec{\beta_j})}$$
+$$ f_j(\pmb{X} \cdot \vec{\alpha_j}) = \frac{\pmb{R}_j \cdot (\vec{w_K} \odot \vec{\beta_j})}{\vec{\beta_j} \cdot (\vec{w_K} \odot \vec{\beta_j})}$$
 
 where $\vec{w_K}$ is a vector containing all output dimension weights, $w_k$.\newline
 
-This provides targets for the funtion $f$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important to fit than others.
+This provides targets for the funtion $f_j$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important to fit than others.
 
 \subsection{Optimizing $\vec{\alpha_j}$ Given $\vec{\beta_j}$ and $f_j$}
 
@@ -213,7 +214,7 @@ $$= -\beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha_j}))
 
 where that last $\odot$ is with each column of $\pmb{X}$ individually.\newline
 
-As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $g$ is given by the solution $\delta$ to:
+As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $g$ is given by the solution $\vec{\delta}$ to:
 
 $$\left[ \sum_{k=1}^d w_k J_{jk}^T J_{jk} \right] \vec{\delta} = \sum_{k=1}^d w_k J_{jk}^T \vec{g_{jkw}}$$
 
@@ -222,6 +223,97 @@ On the left side is a $p \times p$ matrix, and on the right a $p \times 1$ vecto
 $$ \vec{\alpha_j} = \vec{\alpha_j} + \vec{\delta} $$
 
 \section{Classification}
+
+Let risk R be
+
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c=1}^q l_{ck} p(c | \vec{x_i})$$
+
+where
+\begin{itemize}
+	\setlength\itemsep{-2mm}
+	\item $i$ iterates over examples
+	\item $q$ is the total number of classes in the problem
+	\item $min_k$ implements the optimal decision rule for each example
+	\item $l_{ck}$ is the user-specified loss for predicting $y=k$ when in truth $y=c$
+	\item the inner sum is the total loss for predicting $y=k$
+	\item $p(c | x_i)$ is the true probability $y=c$ given input $x_i$
+\end{itemize}
+
+The unknown here is that conditional probability. If we define an indicator variable
+
+$$h_{ci} = 1\ if\ y_i=c,\ 0\ otherwise$$
+
+then the conditional probability can be rewritten as
+
+$$p(c | \vec{x_i}) = \frac{\pi_c S}{s_c} E[\vec{h_c} | \vec{x_i}]$$
+
+where
+\begin{itemize}
+	\setlength\itemsep{-2mm}
+	\item $\pi_c$ is the prior probability that $y=c$ ($h_c=1$), calculable from the training set with $\frac{|num\ examples\ where\ y=c|}{|total\ num\ examples|}$
+	\item $s_c = \sum_{i=1}^n w_i h_{ci}$, the cumulative weight of examples with classification $c$
+	\item $S = \sum_{c=1}^ q s_c$, the cumulative weight of everything, a constant
+	\item $E$ means the expected value
+	\item $h_c$ is the vector of $h_{ci}$ values for all $i$
+\end{itemize}
+
+Notice that if the weights $w_i$ in $s_c$ are uniform (so no example is considered any more important than any other), then $\pi_c = s_c/S$, and all those terms cancel. Additionally, $l_{ck}$ is often simplified as
+
+$$l_{ck} = 1\ if\ c \neq k,\ 0\ if\ c=k$$
+
+So put it all together:
+
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} S \sum_{c=1}^q \frac{\pi_c l_{ck}}{s_c} E[\vec{h_c} | \pmb{X}]$$
+
+With the simplifying assumptions that all examples are equally important and misclassification is equally bad between all class pairs:
+
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[\vec{h_c} | \pmb{X}]$$
+
+Or equivalently:
+
+$$R = \sum_{i=1}^n \max_{k \in [1,q]} E[\vec{h_c} | \pmb{X}]$$
+
+because the sum is minimized by excluding the largest expectation.\newline
+
+Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero.
+
+Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$. That is:
+
+\[
+\pmb{Y} =
+\begin{bmatrix}
+1\\
+0\\
+2\\
+.\\
+.\\
+3\\
+\end{bmatrix}
+%%%%%
+\ \ \ \ \ \ \ \pmb{H} =
+\begin{bmatrix}
+0 & 1 & 0 & 0\\
+1 & 0 & 0 & 0\\
+0 & 0 & 1 & 0\\
+& \hdots & \hdots\\
+& \hdots & \hdots\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\]
+
+And now we can model $\pmb{H}$ with a multivariate PPR model, where we take the predicted class of example $i$ to be:
+
+$$y_i = \argmax_c h_{ci} $$
+
+That is: the index of the column where the largest value in the $i$th row of $\hat{\pmb{H}}$, the predicted H, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
+
+Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, but that $\max_k$ makes the risk nonconvex, which means we can no longer employ the methods detailed in section 3 to find model paramters.
+
+But Friedman assures us that using the same L2 sum-of-squares loss function as used for multivariate regression is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
+
+$$w_c = \frac{S \pi_c}{s_c} \sum_{k \in [1,q]} l_{ck}$$
+
+$S/s_c$ can be interpreted as the inverse weighted relative probability of class c, and $\pi_c$???
 
 
 \end{document}
