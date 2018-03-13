@@ -5,6 +5,8 @@ the classifier at many points in between, and plots the result to visualize
 the decision boundary.
 """
 import numpy as np
+import sys
+sys.path.append("..")
 from skpp import ProjectionPursuitClassifier
 from matplotlib import pyplot as plt
 

@@ -4,6 +4,8 @@ This example trains a regressor to fit data in R1 against only a single
 features, so it can be visualized in 2D.
 """
 import numpy as np
+import sys
+sys.path.append("..")
 from skpp import ProjectionPursuitRegressor
 from matplotlib import pyplot as plt
 

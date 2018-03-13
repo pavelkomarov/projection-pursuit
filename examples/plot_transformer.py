@@ -11,6 +11,8 @@ terms in the PPR model. Here the transformation reduces the dimensionality of X
 because r=2 while X lives in R^3.
 """
 import numpy as np
+import sys
+sys.path.append("..")
 from skpp import ProjectionPursuitRegressor
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D

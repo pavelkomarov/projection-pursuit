@@ -30,7 +30,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		'low' opt_level will disable backfitting. 'medium' backfits previous
 		2D functional fits only (not projections). 'high' backfits everything.
 
-	'example_weights' string or array-like, default='uniform':
+	'example_weights' string or array-like of dimension (n_samples,), default='uniform':
 		The relative importances given to training examples when calculating
 		loss and solving for parameters.
 
@@ -406,7 +406,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		# can get a picture of what is happening.
 		if self.show_plots and (itr % self.plot_epoch == 0):
 			pyplot.scatter(x, y)
-			pyplot.title('plot' + str(itr) + 'stage' + str(j))
+			pyplot.title('stage ' + str(j) + ' iteration ' + str(itr))
 			pyplot.xlabel('projections')
 			pyplot.ylabel('residuals')
 			xx = numpy.linspace(min(x), max(x), 100)
@@ -423,9 +423,6 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 	Parameters
 	----------
 	All the same as those to the constructor of ProjectPursuitRegressor, except:
-
-	`example_weights` array-like of dimension (n_samples,), default=None:
-		A vector of weights indicating the relative importance of samples.
 
 	`pairwise_loss_matrix` array-like of dimension (n_classes, n_classes),
 		default=None: The adjacency matrix L has entries L[c,k]=l_ck specifying

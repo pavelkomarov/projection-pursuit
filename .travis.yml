@@ -17,7 +17,7 @@ notifications:
 deploy:
   on:
     branch: master
-    python: '3.6'
+    python: '3.5'
   provider: pypi
   user: pavelkomarov
   password:
