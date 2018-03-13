@@ -17,7 +17,6 @@ from sklearn.utils.testing import assert_warns_message
 # https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/testing.py
 
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
-
 @pytest.mark.fast_test
 def test_regressor_passes_sklearn_checks():
 	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
@@ -105,26 +104,31 @@ def test_ppr_learns():
 	training = temp[0:int(n*0.8)]
 	testing = temp[int(n*0.8):]
 
-	estimator = ProjectionPursuitRegressor(r=20, fit_type='polyfit', degree=3,
-		opt_level='high')
+	mse_per_element = numpy.sum(Y**2)/Y.size
+	print('Average magnitude of squared Y per element', mse_per_element)
 
-	print('Average magnitude of squared Y per element', numpy.sum(Y**2)/Y.size)
+	estimators = [ProjectionPursuitRegressor(r=20, fit_type='polyfit', degree=3,
+		opt_level='high'), ProjectionPursuitRegressor(out_dim_weights='uniform',
+		fit_type='spline', opt_level='medium')]
+	accuracies = [mse_per_element/1000000, mse_per_element/100]
 
-	print('training')
-	before = time.time()
-	estimator.fit(X[training, :], Y[training, :])
-	after = time.time()
-	print('finished in', after-before, 'seconds')
+	for i in range(len(estimators)):
+		
+		print('training')
+		before = time.time()
+		estimators[i].fit(X[training, :], Y[training, :])
+		after = time.time()
+		print('finished in', after-before, 'seconds')
 
-	Yhat = estimator.predict(X[training, :])
-	train_error = numpy.sum((Y[training, :] - Yhat)**2)/Y[training, :].size
-	print('Average magnitude of squared error in training data per element',
-		train_error)
+		Yhat = estimators[i].predict(X[training, :])
+		train_error = numpy.sum((Y[training, :] - Yhat)**2)/Y[training, :].size
+		print('Average magnitude of squared error in training data per element',
+			train_error)
 
-	Yhat = estimator.predict(X[testing, :])
-	test_error = numpy.sum((Y[testing, :] - Yhat)**2)/Y[testing, :].size
-	print('Average magnitude of squared error in testing data per element',
-		test_error)
+		Yhat = estimators[i].predict(X[testing, :])
+		test_error = numpy.sum((Y[testing, :] - Yhat)**2)/Y[testing, :].size
+		print('Average magnitude of squared error in testing data per element',
+			test_error)
 
-	assert_less(train_error, 1e-5) # Usually on the order of 1e-15 to 1e-7
-	assert_less(test_error, 1e-5)
+		assert_less(train_error, accuracies[i]) # Usually on the order of 1e-15 to 1e-7
+		assert_less(test_error, accuracies[i])

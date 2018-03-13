@@ -198,7 +198,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		# Sklearn does not allow mutation of object parameters (the ones not
 		# prepended by an underscore), so construct or reassign weights
-		if self.example_weights is 'uniform':
+		if isinstance(self.example_weights, str) and \
+			self.example_weights == 'uniform':
 			self._example_weights = numpy.ones(X.shape[0])
 		elif isinstance(self.example_weights, numpy.ndarray):
 			if X.shape[0] != self.example_weights.shape[0]:
@@ -208,7 +209,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			else:
 				self._example_weights = self.example_weights
 
-		if self.out_dim_weights == 'inverse-variance':
+		if isinstance(self.out_dim_weights, str) and \
+			self.out_dim_weights == 'inverse-variance':
 			variances = Y.var(axis=0)
 			if max(variances) == 0:
 				raise ValueError('Y must have some variance.')
@@ -218,7 +220,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# are not major determiners of loss.
 			variances[variances == 0] = max(variances)
 			self._out_dim_weights = 1./variances
-		elif self.out_dim_weights == 'uniform':
+		elif isinstance(self.out_dim_weights, str) and \
+			self.out_dim_weights == 'uniform':
 			self._out_dim_weights = numpy.ones(Y.shape[1])
 		elif isinstance(self.out_dim_weights, numpy.ndarray):
 			if Y.shape[1] != self.out_dim_weights.shape[0]:
@@ -395,7 +398,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# questions/8719754/scipy-interpolate-univariatespline-not-
 			# smoothing-regardless-of-parameters
 			fit = UnivariateSpline(x[order], y[order], w=self._example_weights,
-				k=self.degree, s=len(residual)*residual.var(), ext=0)
+				k=self.degree, s=len(y)*y.var(), ext=0)
 			deriv = fit.derivative(1)
 
 		# Plot the projections versus the residuals in matplotlib so the user
