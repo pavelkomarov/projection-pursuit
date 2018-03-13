@@ -7,7 +7,7 @@ This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-com
 
 ## Installation and Usage
 The package by itself comes with a single module containing the estimators. Before
-installing the module you will need `numpy` and `scipy`.
+installing the module you will need `numpy`, `scipy`, `scikit-learn`, and `matplotlib`.
 To install the module execute:
 
 ```shell
@@ -18,21 +18,20 @@ or
 $ python setup.py install
 ``` 
 
-If the installation is successful, and `scikit-learn` is correctly installed,
-you should be able to execute the following in Python:
+If the installation is successful, you should be able to execute the following in Python:
 ```python
 >>> from skpp import ProjectionPursuitRegressor
 >>> estimator = ProjectionPursuitRegressor()
 >>> estimator.fit(np.arange(10).reshape(10, 1), np.arange(10))
 ```
 
+For a few usage examples, see the examples directory. For an intuition of what the learner is doing, try running `viz_training_process.py`. For a deep dive in to the math and an explanation of exactly how and why this works, see `math.pdf`.
+
 ## References
 
 1. Friedman, Jerome. (1985). "Classification and Multiple Regression Through Projection Pursuit." http://www.slac.stanford.edu/pubs/slacpubs/3750/slac-pub-3824.pdf
 2. Hastie, Tibshirani, & Friedman. (2016). *The Elements of Statistical Learning 2nd Ed.*, section 11.2.
 3. (2017) *Projection pursuit regression* https://en.wikipedia.org/wiki/Projection_pursuit_regression
-
-
 
 
 
