@@ -243,39 +243,46 @@ The unknown here is that conditional probability. If we define an indicator vari
 
 $$h_{ci} = 1\ if\ y_i=c,\ 0\ otherwise$$
 
-then the conditional probability can be rewritten as
+then Friedman says we can rewrite the conditional probability as
 
-$$p(c | \vec{x_i}) = \frac{\pi_c S}{s_c} E[\vec{h_c} | \vec{x_i}]$$
+$$p(c | \vec{x_i}) = \frac{\pi_c S}{s_c} E[h_{ci} | \vec{x_i}]$$
 
 where
 \begin{itemize}
 	\setlength\itemsep{-2mm}
-	\item $\pi_c$ is the prior probability that $y=c$ ($h_c=1$), calculable from the training set with $\frac{|num\ examples\ where\ y=c|}{|total\ num\ examples|}$
+	\item $\pi_c$ is the prior probability that $y_i=c$ ($h_{ci}=1$), calculable from the training set with $\frac{\sum_{i=1}^n h_{ci}}{n}$
 	\item $s_c = \sum_{i=1}^n w_i h_{ci}$, the cumulative weight of examples with classification $c$
-	\item $S = \sum_{c=1}^ q s_c$, the cumulative weight of everything, a constant
+	\item $S = \sum_{c=1}^q s_c$, the cumulative weight of everything, a constant
 	\item $E$ means the expected value
-	\item $h_c$ is the vector of $h_{ci}$ values for all $i$
 \end{itemize}
 
-Notice that if the weights $w_i$ in $s_c$ are uniform (so no example is considered any more important than any other), then $\pi_c = s_c/S$, and all those terms cancel. Additionally, $l_{ck}$ is often simplified as
+The coefficient can be expanded to
+
+$$\frac{\sum_{c=1}^q \sum_{i=1}^n w_i h_{ci} * \frac{\sum_{i=1}^n h_{ci}}{n}}{\sum_{i=1}^n w_i h_{ci}} \propto \frac{\sum_{i=1}^n h_{ci}}{\sum_{i=1}^n w_i h_{ci}}$$
+
+This doesn't make any sense, because it says probabilities are \textit{inversely} related to example weights, but we really want the probability of predicting a given class to be \textit{directly} related to the importances of examples in that class. Convinced Friedman accidentally inverted the equation, the code and the following equations reinvert his inversion.
+
+Notice that if the weights $w_i$ in $s_c$ are uniform (so no example is considered any more important than any other), then $\pi_c = s_c/S$, and all those terms cancel (regardless of the inversion).
+
+Additionally, $l_{ck}$ is often simplified as
 
 $$l_{ck} = 1\ if\ c \neq k,\ 0\ if\ c=k$$
 
-So put it all together:
+So rewrite the risk as
 
-$$R = \sum_{i=1}^n \min_{k \in [1,q]} S \sum_{c=1}^q \frac{\pi_c l_{ck}}{s_c} E[\vec{h_c} | \pmb{X}]$$
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \frac{1}{S} \sum_{c=1}^q \frac{s_c l_{ck}}{\pi_c} E[h_{ci} | \vec{x_i}]$$
 
-With the simplifying assumptions that all examples are equally important and misclassification is equally bad between all class pairs:
+And with the simplifying assumptions that all examples are equally important and misclassification is equally bad between all class pairs it becomes:
 
-$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[\vec{h_c} | \pmb{X}]$$
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[h_{ci} | \vec{x_i}]$$
 
 Or equivalently:
 
-$$R = \sum_{i=1}^n \max_{k \in [1,q]} E[\vec{h_c} | \pmb{X}]$$
+$$R = \sum_{i=1}^n \max_{k \in [1,q]} E[h_{ci} | \vec{x_i}]$$
 
 because the sum is minimized by excluding the largest expectation.\newline
 
-Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero.
+Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero, so $E[\vec{h_c} | \pmb{X}] = \vec{h_c}$, $h_{ci} \forall i$ stacked together.
 
 Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$. That is:
 
@@ -301,19 +308,20 @@ Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as col
 \end{bmatrix}
 \]
 
-And now we can model $\pmb{H}$ with a multivariate PPR model, where we take the predicted class of example $i$ to be:
+And now we can model $\pmb{H}$ with a multivariate projection pursuit regression model, where we take the predicted class of example $i$ to be:
 
 $$y_i = \argmax_c h_{ci} $$
 
-That is: the index of the column where the largest value in the $i$th row of $\hat{\pmb{H}}$, the predicted H, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
+That is: the index of the column where the largest value in the $i$th row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
-Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, but that $\max_k$ makes the risk nonconvex, which means we can no longer employ the methods detailed in section 3 to find model paramters.
+And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model paramters.
 
-But Friedman assures us that using the same L2 sum-of-squares loss function as used for multivariate regression is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
+Fortunately, Friedman assures us (and experiment bears out) that using the quatratic loss function as used for multivariate regression is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
 
-$$w_c = \frac{S \pi_c}{s_c} \sum_{k \in [1,q]} l_{ck}$$
+$$w_c = \frac{s_c}{S \pi_c} \sum_{k \in [1,q]} l_{ck}$$
 
-$S/s_c$ can be interpreted as the inverse weighted relative probability of class c, and $\pi_c$???
+Since weights are relative the constant $S$ and the normalization by the constant $n$ in the calculation of $\pi_c$ can be dropped to yeild:
 
+$$w_c = \frac{\sum_{i=1}^n w_i h_{ci}}{\sum_{i=1}^n h_{ci}} \sum_{k \in [1,q]} l_{ck}$$
 
 \end{document}

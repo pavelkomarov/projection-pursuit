@@ -26,6 +26,31 @@ def test_classifier_passes_sklearn_checks():
 	estimator_checks.check_estimator(ProjectionPursuitClassifier)
 
 @pytest.mark.fast_test
+def test_example_weightings_applied():
+	# Construct a 1D example constrained to deg=2. No polynomial of such low
+	# order can go through all the points, so weights determine which should be
+	# fit more closely.
+	X = numpy.array([[-1],[-0.9],[0],[0.9],[1]])# on a number line
+	Y = numpy.array([0, 1, 1, 1, 0])# the targets for these points
+
+	# If given the following example weightings, the rounded predictions at the
+	# points queried should end up looking like the corresponding targets.
+	example_weights = numpy.array([[1, 1, 1, 1, 1], [1, 100, 100, 100, 1],
+		[100, 1, 1, 1, 100]])
+	targets = numpy.array([[0, 0, 1, 1, 1, 0, 0], [1, 1, 1, 1, 1, 1, 1],
+		[0, 0, 0, 1, 0, 0, 0]])
+
+	for i in range(example_weights.shape[0]):
+		yo = ProjectionPursuitRegressor(degree=2,
+			example_weights=example_weights[i,:])
+		yo.fit(X, Y)
+
+		predictions = numpy.round(yo.predict(numpy.array([[-1], [-0.95], [-0.9],
+			[0], [0.9], [0.95], [1]])))
+
+		assert_array_equal(predictions, targets[i,:])
+
+@pytest.mark.fast_test
 def test_ppr_learns():
 	# Generate some dummy data, X random, Y an additive-model-like construction
 	n = 1000

@@ -421,8 +421,8 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		A vector of weights indicating the relative importance of samples.
 
 	`pairwise_loss_matrix` array-like of dimension (n_classes, n_classes),
-		default=None: The adjacency matrix L has entries L[c,k] specifying the
-		weight of the penalty of predicting the answer is class k when it is
+		default=None: The adjacency matrix L has entries L[c,k]=l_ck specifying
+		the weight of the penalty of predicting the answer is class k when it is
 		actually class c. If unspecified, all penalties are considered to have
 		the same importance.
 	"""
@@ -491,9 +491,9 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		self._encoder = OneHotEncoder() # can take numerical input
 		H = self._encoder.fit_transform(Y).A # .A gets the full numpy array
 
-		# Calculate the weights
+		# Calculate the weights. See section 4 of math.pdf.
 		if self.example_weights is not 'uniform':
-			pi_c = numpy.sum(H, axis=0, dtype=numpy.float64) # find pi_c for all c
+			pi_c = numpy.sum(H, axis=0) # pi_c * n, technically, for all c
 			s_c = numpy.dot(self.example_weights, H) # find s_c for all c
 			w_ex = s_c / (pi_c + 1e-9) # column weights due to example weights
 		else:
@@ -504,6 +504,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		else:
 			w_pl = numpy.ones(H.shape[1])
 
+		# The problem is reduced to regression
 		self._ppr = ProjectionPursuitRegressor(self.r, self.fit_type,
 			self.degree, self.opt_level, self.example_weights, w_ex*w_pl,
 			self.eps_stage, self.eps_backfit, self.stage_maxiter,
@@ -529,8 +530,8 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		"""
 		check_is_fitted(self, '_ppr')
 		H = self._ppr.predict(X)
-		if H.ndim == 1:
-			H = H.reshape(-1, 1)
+		if H.ndim == 1: # sklearn expects a 1D answer from predict some times
+			H = H.reshape(-1, 1) # but here need 2D
 
 		# argmax gives the index of the most likely class. Map back to the class
 		# itself with the encoder's active_features_ array.
