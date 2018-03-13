@@ -224,7 +224,7 @@ $$ \vec{\alpha_j} = \vec{\alpha_j} + \vec{\delta} $$
 
 \section{Classification}
 
-Let risk R be
+Let the miscalssification risk $R$ be
 
 $$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c=1}^q l_{ck} p(c | \vec{x_i})$$
 
@@ -233,10 +233,10 @@ where
 	\setlength\itemsep{-2mm}
 	\item $i$ iterates over examples
 	\item $q$ is the total number of classes in the problem
-	\item $min_k$ implements the optimal decision rule for each example
+	\item $\min_k$ implements the optimal decision rule for each example
 	\item $l_{ck}$ is the user-specified loss for predicting $y=k$ when in truth $y=c$
 	\item the inner sum is the total loss for predicting $y=k$
-	\item $p(c | x_i)$ is the true probability $y=c$ given input $x_i$
+	\item $p(c | \vec{x_i})$ is the true probability $y=c$ given input $\vec{x_i}$
 \end{itemize}
 
 The unknown here is that conditional probability. If we define an indicator variable

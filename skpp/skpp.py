@@ -306,7 +306,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				b = -sum([self._out_dim_weights[k] * self._beta[k, j] *
 					numpy.dot(J.T, G_j[:, k]) for k in range(Y.shape[1])])
 
-				delta = numpy.linalg.lstsq(A, b, rcond=None)[0]
+				delta = numpy.linalg.lstsq(A, b)[0]
 				# TODO implement halving step if the loss doesn't decrease with
 				# this update.
 				alpha = self._alpha[:, j] + delta
