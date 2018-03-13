@@ -1,3 +1,5 @@
+# run with python(3) -m pytest
+
 import numpy
 import pytest
 import time
@@ -16,7 +18,6 @@ from sklearn.utils.testing import assert_warns_message
 
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
-
 @pytest.mark.fast_test
 def test_regressor_passes_sklearn_checks():
 	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
@@ -28,18 +29,32 @@ def test_classifier_passes_sklearn_checks():
 
 @pytest.mark.fast_test
 def test_construction_errors():
-	assert_raises(ProjectionPursuitRegressor, r=0)
-	assert_raises(ProjectionPursuitRegressor, fit_type='jabberwocky')
-	assert_raises(ProjectionPursuitRegressor, degree='master')
-	assert_raises(ProjectionPursuitRegressor, opt_level='near')
-	assert_raises(ProjectionPursuitRegressor, out_dim_weights='light')
-	assert_raises(ProjectionPursuitRegressor, example_weights=numpy.array([-1]))
-	assert_raises(ProjectionPursuitRegressor, out_dim_weights='heavy')
-	assert_raises(ProjectionPursuitRegressor, out_dim_weights=numpy.array([-1]))
-	assert_raises(ProjectionPursuitRegressor, eps_stage=-0.1)
-	assert_raises(ProjectionPursuitRegressor, stage_maxiter=0)
-	assert_raises(ProjectionPursuitClassifier, example_weights=None)
-	assert_raises(ProjectionPursuitClassifier, pairwise_loss_matrix='whereami?')
+	assert_raises(ValueError, ProjectionPursuitRegressor, r=0)
+	assert_raises(NotImplementedError, ProjectionPursuitRegressor, fit_type='jabberwocky')
+	assert_raises(ValueError, ProjectionPursuitRegressor, degree='master')
+	assert_raises(ValueError, ProjectionPursuitRegressor, opt_level='near')
+	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights='light')
+	assert_raises(ValueError, ProjectionPursuitRegressor, example_weights=numpy.array([-1]))
+	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights='heavy')
+	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights=numpy.array([-1]))
+	assert_raises(ValueError, ProjectionPursuitRegressor, eps_stage=-0.1)
+	assert_raises(ValueError, ProjectionPursuitRegressor, stage_maxiter=0)
+	assert_raises(ValueError, ProjectionPursuitClassifier, example_weights=None)
+	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix='whereami?')
+
+@pytest.mark.fast_test
+def test_fit_errors():
+	ppc = ProjectionPursuitClassifier(example_weights=numpy.array([1, 2]))
+	ppr = ProjectionPursuitRegressor(example_weights=numpy.array([1,2]),
+		out_dim_weights=numpy.array([3]))
+	X = numpy.random.randn(5, 2)
+	Y = numpy.array([0, 0, 1, 1, 1])
+	assert_raises(ValueError, ppc.fit, X, Y)
+	assert_raises(ValueError, ppr.fit, X, Y)
+	X = numpy.random.randn(2, 2)
+	Y = numpy.zeros((2, 2))
+	assert_raises(ValueError, ppc.fit, X, Y)
+	assert_raises(ValueError, ppr.fit, X, Y)
 
 @pytest.mark.fast_test
 def test_example_weightings_applied():
