@@ -91,14 +91,15 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			raise ValueError('degree must be >= 1.')
 		if opt_level not in ['low', 'medium', 'high']:
 			raise ValueError('opt_level must be either low, medium, or high.')
-		if example_weights is not 'uniform':
+		if not (isinstance(example_weights, str) and example_weights == 'uniform'):
 			try:
 				example_weights = as_float_array(example_weights)
 			except (TypeError, ValueError) as error:
-				raise ValueError('example_weights must be uniform, or array-like.')
+				raise ValueError('example_weights must be `uniform`, or array-like.')
 			if numpy.any(example_weights < 0):
 				raise ValueError('example_weights can not contain negatives.')
-		if out_dim_weights not in ['inverse-variance', 'uniform']:
+		if not (isinstance(out_dim_weights, str) and out_dim_weights in
+			['inverse-variance', 'uniform']):
 			try:
 				out_dim_weights = as_float_array(out_dim_weights)
 			except (TypeError, ValueError) as error:
@@ -312,7 +313,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				b = -sum([self._out_dim_weights[k] * self._beta[k, j] *
 					numpy.dot(J.T, G_j[:, k]) for k in range(Y.shape[1])])
 
-				delta = numpy.linalg.lstsq(A, b)[0]
+				delta = numpy.linalg.lstsq(A, b, rcond=-1)[0]
 				# TODO implement halving step if the loss doesn't decrease with
 				# this update.
 				alpha = self._alpha[:, j] + delta
@@ -450,6 +451,10 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 				pairwise_loss_matrix = as_float_array(pairwise_loss_matrix)
 			except (ValueError, TypeError) as error:
 				raise ValueError('pairwise_loss_matrix must be None or array-like.')
+			if numpy.any(pairwise_loss_matrix < 0):
+				raise ValueError('pairwise_loss_matrix can not contain negatives.')
+			elif numpy.any(numpy.diag(pairwise_loss_matrix)) != 0:
+				raise ValueError('pairwise_loss_matrix[i,i] must == 0 for all i.')
 
 		# sklearn's clone() works by calling get_params, which calls get_param_
 		# names to crawl the constructor and find out which parameters are
@@ -509,7 +514,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			w_ex = numpy.ones(H.shape[1])
 
 		if self.pairwise_loss_matrix is not None:
-			w_pl = numpy.sum(pairwise_loss_matrix, axis=0)
+			w_pl = numpy.sum(self.pairwise_loss_matrix, axis=1) # sum over k
 		else:
 			w_pl = numpy.ones(H.shape[1])
 

@@ -17,6 +17,7 @@ from sklearn.utils.testing import assert_warns_message
 # https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/testing.py
 
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
+
 @pytest.mark.fast_test
 def test_regressor_passes_sklearn_checks():
 	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
@@ -39,6 +40,8 @@ def test_construction_errors():
 	assert_raises(ValueError, ProjectionPursuitRegressor, eps_stage=-0.1)
 	assert_raises(ValueError, ProjectionPursuitRegressor, stage_maxiter=0)
 	assert_raises(ValueError, ProjectionPursuitClassifier, example_weights=None)
+	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix=numpy.array([-1]))
+	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix=numpy.array([1]))
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix='whereami?')
 
 @pytest.mark.fast_test
@@ -63,19 +66,25 @@ def test_example_weightings_applied():
 	X = numpy.array([[-1],[-0.9],[0],[0.9],[1]])# on a number line
 	Y = numpy.array([0, 1, 1, 1, 0])# the targets for these points
 
+	L = numpy.array([[0, 10], [1, 0]])
+
 	# If given the following example weightings, the rounded predictions at the
 	# points queried should end up looking like the corresponding targets.
 	example_weights = numpy.array([[1, 1, 1, 1, 1], [1, 100, 100, 100, 1],
-		[100, 1, 1, 1, 100]])
+		[100, 1, 1, 1, 100], [10, 1, 1, 10, 1]])
 	targets = numpy.array([[0, 0, 1, 1, 1, 0, 0], [1, 1, 1, 1, 1, 1, 1],
-		[0, 0, 0, 1, 0, 0, 0]])
+		[0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 1, 1, 1]])
 
 	for i in range(example_weights.shape[0]):
-		yo = ProjectionPursuitRegressor(degree=2,
+		ppr = ProjectionPursuitRegressor(degree=2,
 			example_weights=example_weights[i,:])
-		yo.fit(X, Y)
+		ppr.fit(X, Y)
 
-		predictions = numpy.round(yo.predict(numpy.array([[-1], [-0.95], [-0.9],
+		ppc = ProjectionPursuitClassifier(degree=2,
+			example_weights=example_weights[i,:], pairwise_loss_matrix=L)
+		ppc.fit(X, Y)
+
+		predictions = numpy.round(ppr.predict(numpy.array([[-1], [-0.95], [-0.9],
 			[0], [0.9], [0.95], [1]])))
 
 		assert_array_equal(predictions, targets[i,:])
@@ -130,5 +139,5 @@ def test_ppr_learns():
 		print('Average magnitude of squared error in testing data per element',
 			test_error)
 
-		assert_less(train_error, accuracies[i]) # Usually on the order of 1e-15 to 1e-7
+		assert_less(train_error, accuracies[i])
 		assert_less(test_error, accuracies[i])
