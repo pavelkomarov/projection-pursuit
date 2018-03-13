@@ -33,7 +33,7 @@ def test_construction_errors():
 	assert_raises(NotImplementedError, ProjectionPursuitRegressor, fit_type='jabberwocky')
 	assert_raises(ValueError, ProjectionPursuitRegressor, degree='master')
 	assert_raises(ValueError, ProjectionPursuitRegressor, opt_level='near')
-	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights='light')
+	assert_raises(ValueError, ProjectionPursuitRegressor, example_weights='light')
 	assert_raises(ValueError, ProjectionPursuitRegressor, example_weights=numpy.array([-1]))
 	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights='heavy')
 	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights=numpy.array([-1]))
@@ -52,7 +52,7 @@ def test_fit_errors():
 	assert_raises(ValueError, ppc.fit, X, Y)
 	assert_raises(ValueError, ppr.fit, X, Y)
 	X = numpy.random.randn(2, 2)
-	Y = numpy.zeros((2, 2))
+	Y = numpy.eye(2)
 	assert_raises(ValueError, ppc.fit, X, Y)
 	assert_raises(ValueError, ppr.fit, X, Y)
 

@@ -476,16 +476,13 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			A trained model.
 		"""
 		X, Y = check_X_y(X, Y)
+		if Y.ndim == 1:
+			Y = Y.reshape(-1, 1) # Need 2D Y for encoding purposes
 
 		if self.example_weights is not 'uniform' and \
 			self.example_weights.shape[0] != Y.shape[0]:
 			raise ValueError('If weighting examples, then n_examples needs ' + \
 				'to match the length of example_weights from construction.')
-
-		if Y.ndim == 2 and Y.shape[1] != 1:
-			raise ValueErorr('Only single column Y supported for classification.')
-		elif Y.ndim == 1:
-			Y = Y.reshape(-1, 1)
 
 		# classes_ property is required for sklearn classifiers. unique_labels
 		self.classes_ = unique_labels(Y) # also performs some input validation.
