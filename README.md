@@ -25,7 +25,7 @@ If the installation is successful, you should be able to execute the following i
 >>> estimator.fit(np.arange(10).reshape(10, 1), np.arange(10))
 ```
 
-For a few usage examples, see the examples directory. For an intuition of what the learner is doing, try running `viz_training_process.py`. For a deep dive in to the math and an explanation of exactly how and why this works, see `math.pdf`.
+For a few usage examples, see the examples and benchmarks directories. For an intuition of what the learner is doing, try running `viz_training_process.py`. For comparisons to other learners and an intuition of why you might want to try PPR, try the benchmarks. For a deep dive in to the math and an explanation of exactly how and why this works, see `math.pdf`.
 
 ## References
 
