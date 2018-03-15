@@ -25,7 +25,7 @@ If the installation is successful, you should be able to execute the following i
 >>> estimator.fit(np.arange(10).reshape(10, 1), np.arange(10))
 ```
 
-For a few usage examples, see the examples and benchmarks directories. For an intuition of what the learner is doing, try running `viz_training_process.py`. For comparisons to other learners and an intuition of why you might want to try PPR, try the benchmarks. For a deep dive in to the math and an explanation of exactly how and why this works, see `math.pdf`.
+For a few usage examples, see the examples and benchmarks directories. For an intuition of what the learner is doing, try running `viz_training_process.py`. For comparisons to other learners and an intuition of why you might want to try PPR, try the benchmarks. For a deep dive in to the math and an explanation of exactly how and why this works, see [`math.pdf`](https://github.com/pavelkomarov/projection-pursuit/blob/master/math.pdf).
 
 ## References
 
@@ -40,11 +40,9 @@ For a few usage examples, see the examples and benchmarks directories. For an in
 
 TODO:
 
-### 1. Example of training process with model visualization + benefits/benchmarks
+### 1. Make Sphinx output prettier and host somewhere
 
-### 2. Make Sphinx output prettier and host somewhere
-
-### 3. Setting up Circle CI
+### 2. Setting up Circle CI
 The project uses [CircleCI](https://circleci.com/) to build its documentation
 from the `master` branch and host it using [Github Pages](https://pages.github.com/).
 Again, you will need to Sign Up and authorize CircleCI. The configuration

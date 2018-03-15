@@ -14,10 +14,13 @@ after_success:
 notifications:
   email:
   - pvlkmrv@gmail.com
+before_deploy:
+  - rm -R skpp/tests
 deploy:
   on:
+    tags: true
     branch: master
-    python: '3.6'
+    python: '3.5'
   provider: pypi
   user: pavelkomarov
   password:
