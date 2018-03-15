@@ -1,9 +1,6 @@
 
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-    INSTALL_REQUIRES = [l.strip() for l in f.readlines() if l]
-
 setup(name='projection-pursuit',
       version='0.6',
       description='Scikit-learn estimators based on projection pursuit.',
