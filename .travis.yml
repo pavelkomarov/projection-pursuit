@@ -16,6 +16,7 @@ notifications:
   - pvlkmrv@gmail.com
 deploy:
   on:
+    tags: true
     branch: master
     python: '3.5'
   provider: pypi
