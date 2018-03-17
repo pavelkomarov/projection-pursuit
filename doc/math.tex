@@ -19,9 +19,9 @@ I attempt to follow a structure based on the \href{http://lmgtfy.com/?q=sorry+th
 \begin{enumerate}
 	\setlength\itemsep{-2mm}
 	\item A Task/Problem Reduction
+	\item A Model
 	\item A Loss Function
 	\item An Optimization Scheme
-	\item A Model
 	\item Data
 \end{enumerate}
 
@@ -39,10 +39,10 @@ where:
 	\item $i$ iterates examples, the rows of input and output matrices
 	\item $j$ iterates the number of terms in the PPR ``additive model"
 	\item $r$ is the total number of projections and functions (terms) in the PPR
-	\item $\vec{y_i}$ is a $d$-dimensional vector, the $i$th row in an output matrix $\pmb{Y} \in \mathbb{R}^{d \times n}$
-	\item $\vec{x_i}$ is a $p$-dimensional vector, the $i$th row of an input matrix $\pmb{X} \in \mathbb{R}^{p \times n}$
-	\item $\vec{\alpha_j}$ is the $j$th projection vector in the mdoel, a $p$-dimensional vector inner-producted with $x_i$
-	\item $f_j$ is the $j$th function in the model, mapping from $\mathbb{R}^1 \rightarrow \mathbb{R}^1$
+	\item $\vec{y_i}$ is a $d$-dimensional vector, the $i$\textsuperscript{th} row in an output matrix $\pmb{Y} \in \mathbb{R}^{n \times d}$
+	\item $\vec{x_i}$ is a $p$-dimensional vector, the $i$\textsuperscript{th} row of an input matrix $\pmb{X} \in \mathbb{R}^{n \times p}$
+	\item $\vec{\alpha_j}$ is the $j$\textsuperscript{th} projection vector in the mdoel, a $p$-dimensional vector inner-producted with $\vec{x_i}$
+	\item $f_j$ is the $j$\textsuperscript{th} function in the model, mapping from $\mathbb{R}^1 \rightarrow \mathbb{R}^1$
 	\item $\vec{\beta_j}^T$ is the transpose of $\vec{\beta_j}$, a $d$-dimensional vector outer-producted with the result of $f_j$ to yield a result in the output space
 	\item $\cdot$ is an inner product
 	\item $\otimes$ is an outer product
@@ -59,7 +59,7 @@ I also term this the ``evaluation function". It may seem complicated, but the id
 
 \subsection{A Word on Additive Models}
 
-In practice a single projection-mapping-expansion is not descriptive enough to capture the richness of what may be a very complicated underlying relationship between $X$ and $Y$, so it is repeated $r$ times, each new ``stage" only accounting for the variance left unexplained by the stages that have come before. Notice that, as per Taylor's Theorem and the no-doubt familiar universal approximation theorems, for certain classes of functions $f$, as $r$ goes to infinity the evaluation function can approximate any continuous functional relationship between inputs and outputs.
+In practice a single projection-mapping-expansion is not descriptive enough to capture the richness of what may be a very complicated underlying relationship between $\pmb{X}$ and $\pmb{Y}$, so it is repeated $r$ times, each new ``stage" only accounting for the variance left unexplained by the stages that have come before. Notice that, as per Taylor's Theorem and the no-doubt familiar universal approximation theorems, for certain classes of functions $f$, as $r$ goes to infinity the evaluation function can approximate any continuous functional relationship between inputs and outputs.
 
 \section{The Loss Function}
 
@@ -72,7 +72,7 @@ where:
 	\setlength\itemsep{-2mm}
 	\item $i$ iterates all training examples
 	\item $n$ is the total number of training examples
-	\item $w_i$ the weight of the $i$th example
+	\item $w_i$ the weight of the $i$\textsuperscript{th} example
 	\item $y_i$ is the known answer for example $i$
 	\item $\hat{y_i}$ (``y-i-hat") is the answer predicted by the model for example $i$
 \end{itemize}
@@ -88,12 +88,12 @@ where this new fauna:
 	\setlength\itemsep{-2mm}
 	\item $k$ iterates the columns of the output $\pmb{Y}$
 	\item $d$ is the number of outputs, the width of the output matrix $\pmb{Y}$
-	\item $w_k$ is a scalar weight, the relative importance of the $k$th output dimension
-	\item $y_{ik}$ is the scalar $k$th entry in the vector $\vec{y_i}$, itself the $i$th row of $\pmb{Y}$
-	\item $\beta_{jk}$ is the scalar $k$th entry of $\vec{\beta_j}$ from the evaluation function
+	\item $w_k$ is a scalar weight, the relative importance of the $k$\textsuperscript{th} output dimension
+	\item $y_{ik}$ is the scalar $k$\textsuperscript{th} entry in the vector $\vec{y_i}$, itself the $i$\textsuperscript{th} row of $\pmb{Y}$
+	\item $\beta_{jk}$ is the scalar $k$\textsuperscript{th} entry of $\vec{\beta_j}$ from the evaluation function
 \end{itemize}
 
-The parameters we need to optimize to make the PPR ``learn" are $\vec{\alpha_j}$, $f_j$, and $\vec{\beta_j}$. $w_k$ are hyperparameters chosen by the user, just as $r$ is chosen.
+The parameters we need to optimize to make the PPR ``learn" are $\vec{\alpha_j}$, $f_j$, and $\vec{\beta_j}$. $w_k$ are hyperparameters chosen by the user, just as $r$ is chosen. If output dimensions are on differing scales and the user wishes for the loss to be relative to those scales, then choosing $w_k$ inversely proportional to the variance of outputs causes the loss to treat outputs more evenly. If some output dimensions are more important than others, then setting their weights higher causes predictions in those dimensions to be closer.
 
 \section{The Optimization Scheme}
 
@@ -111,13 +111,13 @@ The macroscopic optimization scheme to solve for so many different parameters is
 	\item Increment $j$ and go back to step 2 until $j$ reaches $r$.
 \end{enumerate}
 
-This is a form of \textit{alternating optimization}, wherein all parameters except one are held constant, the best setting for that parameter given those constants is found, and the process cycled through all parameters until convergence.
+The inner loop here is a form of \textit{alternating optimization}, wherein all parameters except one are held constant, the best setting for that parameter given those constants is found, and the process cycled through all parameters until convergence. The outer loop builds up the additive model.
 
 But this leaves some details unexplained. How exactly is the residual found? How are parameters found given fixed solutions to the others?
 
 \subsection{Finding The Residual}
 
-The residual trick cleverly separates the contribution of the $j$th stage from the other terms in the additive model. Consider rephrasing the loss function as:
+The residual trick cleverly separates the contribution of the $j$\textsuperscript{th} stage from the other terms in the additive model. Consider rephrasing the loss function as:
 
 $$loss = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes \beta_{tk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
@@ -131,13 +131,13 @@ $$loss,\ L = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \v
 
 In practice we will wish to find all $r_{ijk}$ for a particular $j$. Call this $\pmb{R}_j \in \mathbb{R}^{n \times d}$, the same space as the output. It can be found with
 
-$$R_{j} = Y - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha_t}) \otimes \vec{\beta_t}$$
+$$\pmb{R}_j = \pmb{Y} - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha_t}) \otimes \vec{\beta_t}$$
 
 \subsection{Optimizing $\vec{\beta_j}$ Given $\vec{\alpha_j}$ and $f_j$}
 
 $$loss\ for\ the\ jth\ term,\ L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
-To optimize with respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$th entry of $\vec{\beta_j}$ as the parameter of interest.
+To optimize wi\textsuperscript{th} respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta_j}$ as the parameter of interest.
 
 $$\frac{\partial L_j}{\partial \beta_{jk'}} = \sum_{i=1}^n w_i w_{k'} [2(r_{ijk'} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk'})(-f_j(\vec{x_i} \cdot \vec{\alpha_j}))] = 0$$
 
@@ -157,7 +157,7 @@ where $\odot$ is a Hadamard product, and the sums disappear inside the inner pro
 
 \subsection{Optimizing $f_j$ Given $\vec{\alpha_j}$ and $\vec{\beta_j}$}
 
-Now a similar argument, but this time consider the parameter of interest to be $f_{i'j}$, the $i$th entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f$ to each entry.
+Now a similar argument, but this time consider the parameter of interest to be $f_{i'j}$, the $i$\textsuperscript{th} entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f$ to each entry.
 
 
 $$\frac{\partial L_j}{\partial f_{i'j}} = \sum_{k=1}^d w_k w_{i'} [2(r_{i'jk} - f_{i'j} \otimes \beta_{jk})(-\beta_{jk})] = 0$$
@@ -188,20 +188,22 @@ where
 
 $$ \vec{g_{jk}} = \vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk}$$
 
-where $\vec{r_{jk}}$ is the $n$-vector formed by stacking $r_{ijk} \forall i$ together, or equivalently the $k$th column of $\pmb{R}_j$.
+where $\vec{r_{jk}}$ is the $n$-vector formed by stacking $r_{ijk} \forall i$ together, or equivalently the $k$\textsuperscript{th} column of $\pmb{R}_j$.
 
-The weights vector can be factored in to the square to yield a form solveable with \href{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm#Description}{Gauss-Newton}.
+The weights can be factored in to the square to yield a form solveable with \href{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm#Description}{Gauss-Newton}.
 
-$$L_j = \sum_{k=1}^d w_k \vec{g_{jkw}}^2$$
+$$L_j = \sum_{k=1}^d \vec{g_{jkw}}^2$$
 
-$$\vec{g_{jkw}} = \sqrt{\vec{w_I}} \odot (\vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk})$$
+$$\vec{g_{jkw}} = \sqrt{w_k} \sqrt{\vec{w_I}} \odot (\vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk})$$
 
 Find the Jacobian:
 
-$$J_{jk}[u,v] = \frac{\partial g_{jkw}[u](\vec{\alpha_j})}{\partial \vec{\alpha_j}[v]} = -\sqrt{w_u} \dot{f_j}(\vec{x_u} \cdot \vec{\alpha_j}) \beta_{jk} x_{uv}$$
+$$J_{jk}[u,v] = \frac{\partial g_{jkw}[u](\vec{\alpha_j})}{\partial \vec{\alpha_j}[v]} = -\sqrt{w_k} \sqrt{w_u} \dot{f_j}(\vec{x_u} \cdot \vec{\alpha_j}) \beta_{jk} x_{uv}$$
+
+where $w_u$ is $\vec{w_I}[u]$, the $u$\textsuperscript{th} example weight.
 
 \[
-\rightarrow J_{jk} = -\beta_{jk}
+\rightarrow J_{jk} = -\sqrt{w_k} \beta_{jk}
 \begin{bmatrix}
 	\sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{00} & \sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{01} & \dots & \sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{0p} \\
     \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{10} & \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{11} & \dots & \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{1p}\\
@@ -210,17 +212,19 @@ $$J_{jk}[u,v] = \frac{\partial g_{jkw}[u](\vec{\alpha_j})}{\partial \vec{\alpha_
 \end{bmatrix}
 \]
 
-$$= -\beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha_j})) \odot \pmb{X}$$
+$$= -\sqrt{w_k} \beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha_j})) \odot \pmb{X}$$
 
 where that last $\odot$ is with each column of $\pmb{X}$ individually.\newline
 
 As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $g$ is given by the solution $\vec{\delta}$ to:
 
-$$\left[ \sum_{k=1}^d w_k J_{jk}^T J_{jk} \right] \vec{\delta} = \sum_{k=1}^d w_k J_{jk}^T \vec{g_{jkw}}$$
+$$\left[ \sum_{k=1}^d J_{jk}^T J_{jk} \right] \vec{\delta} = \sum_{k=1}^d J_{jk}^T \vec{g_{jkw}}$$
 
 On the left side is a $p \times p$ matrix, and on the right a $p \times 1$ vector, so we have an easy-to-solve linear inverse problem.
 
 $$ \vec{\alpha_j} = \vec{\alpha_j} + \vec{\delta} $$
+
+In practice $\vec{\alpha_j}$ is renormalized after this update to avoid numerical drift and keep it from blowing up. Because $\vec{\alpha_j}$ is a projection vector only meant to flatten the data along some dimension, its magnitude does not really matter.
 
 \section{Classification}
 
@@ -310,9 +314,9 @@ Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as col
 
 And now we can model $\pmb{H}$ with a multivariate projection pursuit regression model, where we take the predicted class of example $i$ to be:
 
-$$y_i = \argmax_c h_{ci} $$
+$$y_i = \argmax_c \hat{h_{ci}} $$
 
-That is: the index of the column where the largest value in the $i$th row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
+That is: the index of the column where the largest value in the $i$\textsuperscript{th} row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
 And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model parameters.
 
@@ -323,5 +327,11 @@ $$w_c = \frac{s_c}{S \pi_c} \sum_{k \in [1,q]} l_{ck}$$
 Since weights are relative, the constant $S$ and the normalization by the constant $n$ in the calculation of $\pi_c$ can be dropped to yeild:
 
 $$w_c = \frac{\sum_{i=1}^n w_i h_{ci}}{\sum_{i=1}^n h_{ci}} \sum_{k \in [1,q]} l_{ck}$$
+
+Vectorizing to obtain this weight for all classes at once we get:
+
+$$\vec{w_C} = \frac{\sum_{i=1}^n \pmb{H}}{\vec{w_I} \cdot \pmb{H}} \sum_{k=1}^q \pmb{L}$$
+
+where $\pmb{L}[c,k] = l_{ck}$, the sum over $q$ amounts to a sum along the horizontal (second) axis, the sum over $n$ of $\pmb{H}$ amounts to a sum along the vertical (first) axis, and the division is pointwise on the vectors involved.
 
 \end{document}
