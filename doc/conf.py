@@ -47,18 +47,18 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 	'sphinx.ext.napoleon',
-	#'sphinx_gallery.gen_gallery'
-]
-"""
+	'sphinx_gallery.gen_gallery'
+}
+
 sphinx_gallery_conf = {
 	'plot_gallery' : 'True',
 	'backreferences_dir': 'False',
     # path to your examples scripts
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
-    'gallery_dirs'  : '../out/auto_examples'
+    'gallery_dirs'  : '../doc'
 }
-"""
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
 
@@ -103,7 +103,7 @@ html_theme_options = {
 	'github_repo': 'projection-pursuit',
 	'travis_button': True,
 	'codecov_button': True,
-	'page_width': '2000px'
+	'page_width': '3000px'
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
