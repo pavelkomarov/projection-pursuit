@@ -14,7 +14,6 @@
 #
 import sys
 sys.path.append('skpp')
-sys.path.append('skpp/tests')
 
 # -- Project information -----------------------------------------------------
 
@@ -38,6 +37,7 @@ release = u'0.7'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+	'numpydoc',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -94,7 +94,16 @@ html_theme = 'alabaster'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'page_width': '10cm'}
+html_theme_options = {
+	'description': 'Machine learning through projection pursuit.',
+	'github_button': True,
+	'github_user': 'pavelkomarov',
+	'github_repo': 'projection-pursuit',
+	'github_banner': True,
+	'travis_button': True,
+	'codecov_button': True,
+	'page_width': '2000px'
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
