@@ -13,7 +13,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import sys
-sys.path.append('../skpp')
+sys.path.append('skpp')
 
 # -- Project information -----------------------------------------------------
 
