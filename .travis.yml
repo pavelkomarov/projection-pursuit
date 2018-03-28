@@ -8,7 +8,7 @@ python:
 - 3.5
 
 install:
-- pip install numpy matplotlib scipy scikit-learn pytest coveralls
+- pip install numpy matplotlib scipy scikit-learn pytest coveralls Sphinx
 # use coverage to run "pytest -s" as the main module (-m) using skpp as the code to measure (--source)
 
 script:
