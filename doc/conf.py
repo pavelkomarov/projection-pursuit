@@ -45,7 +45,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-	'numpydoc'
+	'sphinx.ext.napoleon'
 ]
 
 sphinx_gallery_conf = {
@@ -99,7 +99,6 @@ html_theme_options = {
 	'github_button': True,
 	'github_user': 'pavelkomarov',
 	'github_repo': 'projection-pursuit',
-	'github_banner': True,
 	'travis_button': True,
 	'codecov_button': True,
 	'page_width': '2000px'
