@@ -10,7 +10,7 @@ from matplotlib import pyplot
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
-	""" This class implements the PPR algorithm as detailed in math.pdf.
+	"""This class implements the PPR algorithm as detailed in math.pdf.
 
 	Parameters
 	----------
@@ -73,6 +73,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 	`plot_epoch` int, default=50:
 		If plots are displayed, show them every `plot_epoch` iterations of the
 		stage-fitting process.
+	
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
 				 example_weights='uniform', out_dim_weights='inverse-variance',
@@ -147,13 +148,14 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			where r is the hyperparameter given to the constructor, the number
 			of terms in the additive model, and the jth column is the projection
 			of X through alpha_j.
+		
 		"""
 		check_is_fitted(self, '_alpha')
 		X = check_array(X)
 		return numpy.dot(X, self._alpha)
 
 	def predict(self, X):
-		""" Use the fitted estimator to make predictions on new data.
+		"""Use the fitted estimator to make predictions on new data.
 
 		Parameters
 		----------
@@ -164,6 +166,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		-------
 		`Y` array of shape = (n_samples) or (n_samples, n_outputs):
 			The result of passing X through the evaluation function.
+		
 		"""
 		# Check whether the PPR is trained, and if so get the projections.
 		P = self.transform(X) # P is an n x r matrix.
@@ -177,7 +180,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		return Y if Y.shape[1] != 1 else Y[:,0]
 
 	def fit(self, X, Y):
-		""" Train the model.
+		"""Train the model.
 
 		Parameters
 		----------
@@ -190,6 +193,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		-------
 		self ProjectionPursuitRegressor:
 			A trained model.
+		
 		"""
 		X, Y = check_X_y(X, Y, multi_output=True)
 		if Y.ndim == 1: # standardize Y as 2D so the below always works
@@ -249,7 +253,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		return self
 
 	def _fit_stage(self, X, Y, j, fit_weights):
-		""" A "stage" consists of a set of alpha_j, f_j, and beta_j parameters.
+		"""A "stage" consists of a set of alpha_j, f_j, and beta_j parameters.
 		Given the stages already fit, find the residual this stage should try
 		to match, and perform alternating optimization until parameters have
 		converged.
@@ -264,6 +268,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			The index of this stage in the additive model.
 		`fit_weights` boolean:
 			Whether to refit alpha_j or leave it unmodified.
+		
 		"""
 		# projections P = X*Alphas, P_j = X*alpha_j
 		P = self.transform(X) # the n x r projections matrix
@@ -335,7 +340,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			itr += 1
 
 	def _backfit(self, X, Y, j, fit_weights):
-		""" Backfitting is the process of refitting all stages after a new stage
+		"""Backfitting is the process of refitting all stages after a new stage
 		is found. The idea is that the new stage causes the residuals for other
 		stages to change, so it may be possible to do better in fewer stages by
 		accounting for this new information.
@@ -354,6 +359,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			The index of this stage in the additive model.
 		`fit_weights` boolean:
 			Whether to refit stages' alphas or leave them unmodified.
+		
 		"""
 		itr = 0
 		prev_loss = -numpy.inf
@@ -369,7 +375,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			itr += 1
 
 	def _fit_2d(self, x, y, j, itr):
-		""" Find a function mapping from x points in R1 to y points in R1.
+		"""Find a function mapping from x points in R1 to y points in R1.
 
 		Parameters
 		----------
@@ -418,7 +424,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 
 class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
-	""" Perform classification with projection pursuit.
+	"""Perform classification with projection pursuit.
 
 	Parameters
 	----------
@@ -429,6 +435,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		the weight of the penalty of predicting the answer is class k when it is
 		actually class c. If unspecified, all penalties are considered to have
 		the same importance.
+	
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
 				 example_weights='uniform', pairwise_loss_matrix=None,
@@ -466,7 +473,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 				setattr(self, k, v)
 
 	def fit(self, X, Y):
-		""" Train the model.
+		"""Train the model.
 
 		Parameters
 		----------
@@ -479,6 +486,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		-------
 		self ProjectionPursuitClassifier:
 			A trained model.
+		
 		"""
 		X, Y = check_X_y(X, Y)
 		if Y.ndim == 1:
@@ -526,7 +534,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		return self
 
 	def predict(self, X):
-		""" Use the fitted estimator to make predictions on new data.
+		"""Use the fitted estimator to make predictions on new data.
 
 		Parameters
 		----------
@@ -538,6 +546,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		`Y` array of shape = (n_samples):
 			The result of passing X through the evaluation function, taking
 			the argmax of the output, and mapping it back to a class.
+		
 		"""
 		check_is_fitted(self, '_ppr')
 		H = self._ppr.predict(X)
