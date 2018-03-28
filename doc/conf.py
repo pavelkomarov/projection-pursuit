@@ -52,7 +52,7 @@ extensions = [
 
 sphinx_gallery_conf = {
 	'plot_gallery' : 'True',
-	'backreferences_dir': 'False',
+	'backreferences_dir': 'True',
     # path to your examples scripts
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
