@@ -14,63 +14,62 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 	Parameters
 	----------
-	`r` int, default=10:
+	r : int, default=10
 		The number of terms in the underlying additive model. The input will be
 		put through `r` projections, `r` functions of those projections, and
 		then multiplication by `r` output vectors to determine output.
 
-	`fit_type` {'polyfit', 'spline'}, default='polyfit':
+	fit_type : {'polyfit', 'spline'}, default='polyfit'
 		The kind of function to fit at each stage.
 
-	`degree` int, default=3:
+	degree : int, default=3:
 		The degree of polynomials or spline-sections used as the univariate
 		approximator between projection and weighted residual targets.
 
-	`opt_level` {'high', 'medium', 'low'}, default='high':
+	opt_level : {'high', 'medium', 'low'}, default='high'
 		'low' opt_level will disable backfitting. 'medium' backfits previous
 		2D functional fits only (not projections). 'high' backfits everything.
 
-	`example_weights` string or array-like of dimension (n_samples,), default='uniform':
+	example_weights : string or array-like of dimension (n_samples,), default='uniform'
 		The relative importances given to training examples when calculating
 		loss and solving for parameters.
 
-	`out_dim_weights` string or array-like, default='inverse-variance':
+	out_dim_weights : string or array-like, default='inverse-variance'
 		The relative importances given to output dimensions when calculating the
 		weighted residual (output of the univariate functions f_j). If all
 		dimensions are of the same importance, but outputs are of different
 		scales, then using the inverse variance is a good choice.
-		Possible values:
-		* `'inverse-variance'`: Divide outputs by their variances.
-		* `'uniform'`: Use a vector of ones as the weights.
-		* `array`: Provide a custom vector of weights of dimension (n_outputs,)
+		Possible values: `'inverse-variance'`: Divide outputs by their variances,
+		`'uniform'`: Use a vector of ones as the weights, `array`: Provide a custom
+		vector of weights of dimension (n_outputs,)
 
-	`eps_stage` float, default=0.0001:
+	eps_stage : float, default=0.0001
 		The mean squared difference between the predictions of the PPR at
 		subsequent iterations of a "stage" (fitting an f, beta pair) must reach
 		below this epsilon in order for the stage to be considered converged.
 
-	`eps_backfit` float, default=0.01:
+	eps_backfit : float, default=0.01
 		The mean squared difference between the predictions of the PPR at
 		subsequent iterations of a "backfit" must reach below this epsilon in
 		order for backfitting to be considered converged.
 
-	`stage_maxiter` int, default=100:
+	stage_maxiter : int, default=100
 		If a stage does not converge within this many iterations, end the loop
 		and move on. This is useful for divergent cases.
 
-	`backfit_maxiter` int, default=10:
+	backfit_maxiter : int, default=10
 		If a backfit does not converge withint this many iterations, end the
 		loop and move on. Smaller values may be preferred here since backfit
 		iterations are expensive.
 
-	`random_state` int, numpy.RandomState, default=None:
+	random_state : int, numpy.RandomState, default=None
 		An optional object with which to seed randomness.
 
-	`show_plots` boolean, default=False:
+	show_plots : boolean, default=False
 		Whether to produce plots of projections versus residual variance
 		throughout the training process.
 
-	`plot_epoch` int, default=50:
+	plot_epoch : int, default=50:
 		If plots are displayed, show them every `plot_epoch` iterations of the
 		stage-fitting process.
 	
@@ -139,12 +138,12 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		`X` array-like of shape (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The input samples.
 
 		Returns
 		-------
-		Projections, an array of shape (n_inputs, r):
+		Projections : an array of shape (n_inputs, r)
 			where r is the hyperparameter given to the constructor, the number
 			of terms in the additive model, and the jth column is the projection
 			of X through alpha_j.
@@ -159,12 +158,12 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The input samples.
 
 		Returns
 		-------
-		`Y` array of shape = (n_samples) or (n_samples, n_outputs):
+		Y : array of shape (n_samples) or (n_samples, n_outputs)
 			The result of passing X through the evaluation function.
 		
 		"""
@@ -184,14 +183,14 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The training input samples.
-		`Y` array-like, shape = (n_samples,) or (n_samples, n_outputs)
+		Y : array-like, shape (n_samples,) or (n_samples, n_outputs)
 			The target values.
 
 		Returns
 		-------
-		self ProjectionPursuitRegressor:
+		self : ProjectionPursuitRegressor
 			A trained model.
 		
 		"""
@@ -260,13 +259,13 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The training input samples.
-		`Y` array-like, shape (n_samples, n_outputs)
+		Y : array-like, shape (n_samples, n_outputs)
 			The target values.
-		`j` int:
+		j : int
 			The index of this stage in the additive model.
-		`fit_weights` boolean:
+		fit_weights : boolean
 			Whether to refit alpha_j or leave it unmodified.
 		
 		"""
@@ -351,13 +350,13 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The training input samples.
-		`Y` array-like, shape (n_samples, n_outputs)
+		Y : array-like, shape (n_samples, n_outputs)
 			The target values.
-		`j` int:
+		j : int
 			The index of this stage in the additive model.
-		`fit_weights` boolean:
+		fit_weights : boolean
 			Whether to refit stages' alphas or leave them unmodified.
 		
 		"""
@@ -379,20 +378,20 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Parameters
 		----------
-		x array-like:
+		x : array-like
 			Input points.
-		y array-like:
+		y : array-like
 			Target points.
-		j int:
+		j : int
 			The index of the stage that requires this fit. Only used for plots.
-		itr int:
+		itr : int
 			The current iteration of the alternating optimization process that
 			requires this fit. Only used for plots.
 
 		Returns
 		-------
-		fit, a callable requiring numerical input
-		derive, a callable requiring numerical input
+		fit : a callable requiring numerical input
+		deriv : a callable requiring numerical input
 
 		"""
 		if self.fit_type == 'polyfit':
@@ -428,13 +427,13 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 	Parameters
 	----------
-	All the same as those to the constructor of ProjectPursuitRegressor, except:
+	`All the same as those to the constructor of ProjectPursuitRegressor, except:`
 
-	`pairwise_loss_matrix` array-like of dimension (n_classes, n_classes),
-		default=None: The adjacency matrix L has entries L[c,k]=l_ck specifying
-		the weight of the penalty of predicting the answer is class k when it is
-		actually class c. If unspecified, all penalties are considered to have
-		the same importance.
+	pairwise_loss_matrix : array-like of dimension (n_classes, n_classes), default=None
+		The adjacency matrix L has entries L[c,k]=l_ck specifying the weight of
+		the penalty of predicting the answer is class k when it is actually
+		class c. If unspecified, all penalties are considered to have the same
+		importance.
 	
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
@@ -477,9 +476,9 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The training input samples.
-		`Y` array-like, shape = (n_samples,) or (n_samples, n_outputs)
+		Y : array-like, shape (n_samples,) or (n_samples, n_outputs)
 			The target values.
 
 		Returns
@@ -538,12 +537,12 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 		Parameters
 		----------
-		`X` array-like of shape = (n_samples, n_features):
+		X : array-like of shape (n_samples, n_features)
 			The input samples.
 
 		Returns
 		-------
-		`Y` array of shape = (n_samples):
+		Y : array of shape (n_samples)
 			The result of passing X through the evaluation function, taking
 			the argmax of the output, and mapping it back to a class.
 		
