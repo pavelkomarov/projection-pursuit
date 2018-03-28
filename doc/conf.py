@@ -14,6 +14,7 @@
 #
 import sys
 sys.path.append('skpp')
+sys.path.append('skpp/tests')
 
 # -- Project information -----------------------------------------------------
 
@@ -24,7 +25,7 @@ author = u'Pavel Komarov'
 # The short X.Y version
 version = u''
 # The full version, including alpha/beta/rc tags
-release = u'0.2'
+release = u'0.7'
 
 
 # -- General configuration ---------------------------------------------------
