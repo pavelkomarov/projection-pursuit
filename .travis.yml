@@ -30,11 +30,11 @@ deploy:
   on:
     branch: master
 
-  provider: pypi
-  user: pavelkomarov
-  password:
-    secure: L12e2JIGYwgiK+0s1pp2A/OsdZmRQALXbMTEjOWTNurWhTxXZZJ9R+M6U2M9ZmkxZ6we3maZ3Bcuv10zzvi/LoE0VIgaaL+kLHYkq1hPe83wxdmEepk4/uzIABy6XKunx59ennMJSaMZM+9Ks5VzZ1GuVhKhpt13FQQbbKX4uw9lywalzkuKbyD20boaJeJfKAkXguQAzquZB1+n1cpeKO/2qkMQ+2M6iSIT+kM0qPZrS6xJ5ENrjxlDqIuDLlw/XZqRUyEdm9SKDYycq9Imw5aOFI2uTyrjowBlTRNTqbclo6NOak4YQ5zGzk0Rqq2tQKXgamEhmF5JwACQo1DsJapK7ihJC+blSIlkDSvrmUivgjJmF8GdFzgSumek60MRwqqs9t9PdmV/p3rzm+nlcstpwh3s7DVMTLMGkXXqdr2CJAQXFb0QRag6chURAPRSA4N6Z8bm45LURwJq5mHetm9tbxQHoWwV1/SIjQ2wgAeTZNog1jCk/4LSdDCTrAx1/0MVjVUOIY+hlH4UvZDS61CSeDEZUH4HTttz+Zbf01byu63LyC6mg7WwTMRHGc8T36c/XPrKzgSVkLqeDOZVani9hakUvcHT5EyMYXUZmECQ7GTHRB4Ttf2wREPSIRX1FdOnm10+JUb9YqRkVHbvb/ye+1l1DNLcmBNGOLyQb9M=
-  on:
-    tags: true
-    branch: master
-    python: '3.5'
+#  provider: pypi
+#  user: pavelkomarov
+#  password:
+#    secure: L12e2JIGYwgiK+0s1pp2A/OsdZmRQALXbMTEjOWTNurWhTxXZZJ9R+M6U2M9ZmkxZ6we3maZ3Bcuv10zzvi/LoE0VIgaaL+kLHYkq1hPe83wxdmEepk4/uzIABy6XKunx59ennMJSaMZM+9Ks5VzZ1GuVhKhpt13FQQbbKX4uw9lywalzkuKbyD20boaJeJfKAkXguQAzquZB1+n1cpeKO/2qkMQ+2M6iSIT+kM0qPZrS6xJ5ENrjxlDqIuDLlw/XZqRUyEdm9SKDYycq9Imw5aOFI2uTyrjowBlTRNTqbclo6NOak4YQ5zGzk0Rqq2tQKXgamEhmF5JwACQo1DsJapK7ihJC+blSIlkDSvrmUivgjJmF8GdFzgSumek60MRwqqs9t9PdmV/p3rzm+nlcstpwh3s7DVMTLMGkXXqdr2CJAQXFb0QRag6chURAPRSA4N6Z8bm45LURwJq5mHetm9tbxQHoWwV1/SIjQ2wgAeTZNog1jCk/4LSdDCTrAx1/0MVjVUOIY+hlH4UvZDS61CSeDEZUH4HTttz+Zbf01byu63LyC6mg7WwTMRHGc8T36c/XPrKzgSVkLqeDOZVani9hakUvcHT5EyMYXUZmECQ7GTHRB4Ttf2wREPSIRX1FdOnm10+JUb9YqRkVHbvb/ye+1l1DNLcmBNGOLyQb9M=
+#  on:
+#    tags: true
+#    branch: master
+#    python: '3.5'
