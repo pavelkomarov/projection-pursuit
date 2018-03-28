@@ -1,4 +1,4 @@
 
 from .skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
-__version__ = 0.6
+__version__ = 0.7
