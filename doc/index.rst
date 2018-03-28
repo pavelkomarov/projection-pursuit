@@ -9,3 +9,6 @@ Welcome to projection-pursuit's documentation!
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+* :ref:`plot_classifier`
+* :ref:`plot_regressor`
+* :ref:`plot_transformer`
