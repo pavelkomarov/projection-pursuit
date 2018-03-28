@@ -47,7 +47,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 	'sphinx.ext.napoleon',
-	'sphinx_gallery.gen_gallery'
+	#'sphinx_gallery.gen_gallery'
 ]
 """
 sphinx_gallery_conf = {
