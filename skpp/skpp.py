@@ -122,19 +122,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 	def transform(self, X):
 		"""Find the projections of X through all alpha vectors in the PPR.
 
-		_alpha is a p x r matrix [  |    |        |   ]
-		                         [ a_0  a_1 ... a_r-1 ]
-		                         [  |    |        |   ]
-		and X is an n x p matrix [ ---x_0--- ]
-		                         [ ---x_1--- ]
-		                         [    ...    ]
-		                         [ --x_n-1-- ]
-		So the inner X with _alpha stores the projections of X through
-		alpha_j in the jth column of the result:
-		P = [  x_0*a_0   x_0*a_1  ...  x_0*a_r-1  ]
-		    [  x_1*a_0   x_1*a_1  ...  x_1*a_r-1  ]
-		    [   ...       ...     ...      ...    ]
-		    [ x_n-1*a_0 x_n-1*a_1 ... x_n-1*a_r-1 ]
+		:math:`\\Alpha` is a p x r matrix with projection vectors in each
+		column and :math:`X` is an n x p matrix with examples in each row, so
+		the inner product of the two stores projections.
 
 		Parameters
 		----------
@@ -143,10 +133,10 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		Returns
 		-------
-		Projections : an array of shape (n_inputs, r)
+		Projections : an array of shape (n_samples, r)
 			where r is the hyperparameter given to the constructor, the number
 			of terms in the additive model, and the jth column is the projection
-			of X through alpha_j.
+			of :math:`X` through :math:`\\alpha_j`.
 		
 		"""
 		check_is_fitted(self, '_alpha')
@@ -427,13 +417,16 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 	Parameters
 	----------
-	`All the same as those to the constructor of ProjectPursuitRegressor, except:`
 
 	pairwise_loss_matrix : array-like of dimension (n_classes, n_classes), default=None
 		The adjacency matrix L has entries L[c,k]=l_ck specifying the weight of
 		the penalty of predicting the answer is class k when it is actually
 		class c. If unspecified, all penalties are considered to have the same
 		importance.
+		
+	See Also
+	--------
+	ProjectionPursuitRegressor : for definitions of other parameters
 	
 	"""
 	def __init__(self, r=10, fit_type='polyfit', degree=3, opt_level='high',
@@ -483,7 +476,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 		Returns
 		-------
-		self ProjectionPursuitClassifier:
+		self : ProjectionPursuitClassifier:
 			A trained model.
 		
 		"""
