@@ -38,6 +38,7 @@ release = u'0.7'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+	'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
