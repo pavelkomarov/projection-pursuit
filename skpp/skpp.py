@@ -40,9 +40,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		dimensions are of the same importance, but outputs are of different
 		scales, then using the inverse variance is a good choice.
 		Possible values:
-		*`'inverse-variance'`: Divide outputs by their variances.
-		*`'uniform'`: Use a vector of ones as the weights.
-		*`array`: Provide a custom vector of weights of dimension (n_outputs,)
+		* `'inverse-variance'`: Divide outputs by their variances.
+		* `'uniform'`: Use a vector of ones as the weights.
+		* `array`: Provide a custom vector of weights of dimension (n_outputs,)
 
 	`eps_stage` float, default=0.0001:
 		The mean squared difference between the predictions of the PPR at
@@ -120,21 +120,21 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				setattr(self, k, v)
 
 	def transform(self, X):
-		""" Find the projections of X through all alpha vectors in the PPR.
+		"""Find the projections of X through all alpha vectors in the PPR.
 
-			_alpha is a p x r matrix [  |    |        |   ]
-			                         [ a_0  a_1 ... a_r-1 ]
-			                         [  |    |        |   ]
-			and X is an n x p matrix [ ---x_0--- ]
-			                         [ ---x_1--- ]
-			                         [    ...    ]
-			                         [ --x_n-1-- ]
-			So the inner X with _alpha stores the projections of X through
-			alpha_j in the jth column of the result:
-			P = [  x_0*a_0   x_0*a_1  ...  x_0*a_r-1  ]
-			    [  x_1*a_0   x_1*a_1  ...  x_1*a_r-1  ]
-			    [   ...       ...     ...      ...    ]
-			    [ x_n-1*a_0 x_n-1*a_1 ... x_n-1*a_r-1 ]
+		_alpha is a p x r matrix [  |    |        |   ]
+		                         [ a_0  a_1 ... a_r-1 ]
+		                         [  |    |        |   ]
+		and X is an n x p matrix [ ---x_0--- ]
+		                         [ ---x_1--- ]
+		                         [    ...    ]
+		                         [ --x_n-1-- ]
+		So the inner X with _alpha stores the projections of X through
+		alpha_j in the jth column of the result:
+		P = [  x_0*a_0   x_0*a_1  ...  x_0*a_r-1  ]
+		    [  x_1*a_0   x_1*a_1  ...  x_1*a_r-1  ]
+		    [   ...       ...     ...      ...    ]
+		    [ x_n-1*a_0 x_n-1*a_1 ... x_n-1*a_r-1 ]
 
 		Parameters
 		----------
