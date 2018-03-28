@@ -8,7 +8,7 @@ python:
 - 3.5
 
 install:
-- pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery
+- pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery pillow
 
 script:
   - sphinx-build -a -q doc out
