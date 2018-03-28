@@ -4,16 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to projection-pursuit's documentation!
-==============================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
-
-Indices and tables
-==================
+----------------------------------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
