@@ -122,9 +122,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 	def transform(self, X):
 		"""Find the projections of X through all alpha vectors in the PPR.
 
-		:math:`\\Alpha` is a p x r matrix with projection vectors in each
-		column and :math:`X` is an n x p matrix with examples in each row, so
-		the inner product of the two stores projections.
+		:math:`A` is a p x r matrix with projection vectors in each column, and
+		:math:`X` is an n x p matrix with examples in each row, so the inner
+		product of the two stores projections.
 
 		Parameters
 		----------
