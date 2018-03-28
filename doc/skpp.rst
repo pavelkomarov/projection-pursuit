@@ -1,8 +1,5 @@
-skpp package
-============
-
 skpp module
-----------------
+-----------
 
 .. automodule:: skpp
     :members:
