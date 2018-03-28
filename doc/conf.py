@@ -39,7 +39,6 @@ release = u'0.7'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
