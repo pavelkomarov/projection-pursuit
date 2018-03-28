@@ -27,8 +27,7 @@ deploy:
   skip-cleanup: true
   github-token: 928174cee70fd38420956befdd90fd12933b15a6
   keep-history: true
-  on:
-    branch: master
+  local-dir: doc/html
 
 #  provider: pypi
 #  user: pavelkomarov
