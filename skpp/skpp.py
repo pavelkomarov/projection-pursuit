@@ -24,25 +24,25 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 	`degree` int, default=3:
 		The degree of polynomials or spline-sections used as the univariate
-		approximator between projection and .
+		approximator between projection and weighted residual targets.
 
 	`opt_level` {'high', 'medium', 'low'}, default='high':
 		'low' opt_level will disable backfitting. 'medium' backfits previous
 		2D functional fits only (not projections). 'high' backfits everything.
 
-	'example_weights' string or array-like of dimension (n_samples,), default='uniform':
+	`example_weights` string or array-like of dimension (n_samples,), default='uniform':
 		The relative importances given to training examples when calculating
 		loss and solving for parameters.
 
-	'out_dim_weights' string or array-like, default='inverse-variance':
+	`out_dim_weights` string or array-like, default='inverse-variance':
 		The relative importances given to output dimensions when calculating the
 		weighted residual (output of the univariate functions f_j). If all
 		dimensions are of the same importance, but outputs are of different
 		scales, then using the inverse variance is a good choice.
 		Possible values:
-			`'inverse-variance'`: Divide outputs by their variances.
-			`'uniform'`: Use a vector of ones as the weights.
-			`array`: Provide a custom vector of weights of dimension (n_outputs,)
+		*`'inverse-variance'`: Divide outputs by their variances.
+		*`'uniform'`: Use a vector of ones as the weights.
+		*`array`: Provide a custom vector of weights of dimension (n_outputs,)
 
 	`eps_stage` float, default=0.0001:
 		The mean squared difference between the predictions of the PPR at
@@ -123,18 +123,18 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		""" Find the projections of X through all alpha vectors in the PPR.
 
 			_alpha is a p x r matrix [  |    |        |   ]
-									 [ a_0  a_1 ... a_r-1 ]
-									 [  |    |        |   ]
+			                         [ a_0  a_1 ... a_r-1 ]
+			                         [  |    |        |   ]
 			and X is an n x p matrix [ ---x_0--- ]
-									 [ ---x_1--- ]
-									 [    ...    ]
-									 [ --x_n-1-- ]
+			                         [ ---x_1--- ]
+			                         [    ...    ]
+			                         [ --x_n-1-- ]
 			So the inner X with _alpha stores the projections of X through
 			alpha_j in the jth column of the result:
 			P = [  x_0*a_0   x_0*a_1  ...  x_0*a_r-1  ]
-				[  x_1*a_0   x_1*a_1  ...  x_1*a_r-1  ]
-				[   ...       ...     ...      ...    ]
-				[ x_n-1*a_0 x_n-1*a_1 ... x_n-1*a_r-1 ]
+			    [  x_1*a_0   x_1*a_1  ...  x_1*a_r-1  ]
+			    [   ...       ...     ...      ...    ]
+			    [ x_n-1*a_0 x_n-1*a_1 ... x_n-1*a_r-1 ]
 
 		Parameters
 		----------
