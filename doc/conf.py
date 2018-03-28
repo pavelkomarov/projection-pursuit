@@ -49,7 +49,7 @@ extensions = [
 	'sphinx.ext.napoleon',
 	'sphinx_gallery.gen_gallery'
 ]
-
+"""
 sphinx_gallery_conf = {
 	'plot_gallery' : 'True',
 	'backreferences_dir': 'False',
@@ -58,7 +58,7 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs'  : '../out/auto_examples'
 }
-
+"""
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
 
