@@ -1,8 +1,9 @@
-"""This script can help you visualize the training process. A plot is presented
-in the midst of the function-fitting step of each iteration of the alternating
-optimization loop. It displays the residual variance (targets) vs the
-projected data. There is no backfitting so each "stage" is fit exactly once.
-Notice how the points draw closer to the line each iteration and how through
+"""This script can help you visualize the training process.
+
+A plot is presented in the midst of the function-fitting step of each iteration
+of the alternating optimization loop. It displays the residual variance (targets)
+vs the projected data. There is no backfitting so each "stage" is fit exactly
+once. Notice how the points draw closer to the line each iteration and how through
 the stages, as more of the output variance is accounted for, the scale on the
 Y axis shrinks.
 """
