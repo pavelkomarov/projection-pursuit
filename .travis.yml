@@ -13,7 +13,7 @@ install:
 
 script:
   - coverage run --source=skpp -m pytest -s
-  - sphinx-build -b html doc out
+  - sphinx-build -a -b singlehtml doc out
 
 after_success:
   - coveralls
