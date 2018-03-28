@@ -314,9 +314,9 @@ Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as col
 
 And now we can model $\pmb{H}$ with a multivariate projection pursuit regression model, where we take the predicted class of example $i$ to be:
 
-$$y_i = \argmax_c \hat{h_{ci}} $$
+$$\hat{y_i} = \argmax_c \hat{h_{ci}} $$
 
-That is: the index of the column where the largest value in the $i$\textsuperscript{th} row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
+That is: the predicted class is the index of the column where the largest value in the $i$\textsuperscript{th} row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
 And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model parameters.
 
@@ -330,7 +330,7 @@ $$w_c = \frac{\sum_{i=1}^n w_i h_{ci}}{\sum_{i=1}^n h_{ci}} \sum_{k \in [1,q]} l
 
 Vectorizing to obtain this weight for all classes at once we get:
 
-$$\vec{w_C} = \frac{\sum_{i=1}^n \pmb{H}}{\vec{w_I} \cdot \pmb{H}} \sum_{k=1}^q \pmb{L}$$
+$$\vec{w_C} = \frac{\vec{w_I} \cdot \pmb{H}}{\sum_{i=1}^n \pmb{H}} \odot \sum_{k=1}^q \pmb{L}$$
 
 where $\pmb{L}[c,k] = l_{ck}$, the sum over $q$ amounts to a sum along the horizontal (second) axis, the sum over $n$ of $\pmb{H}$ amounts to a sum along the vertical (first) axis, and the division is pointwise on the vectors involved.
 
