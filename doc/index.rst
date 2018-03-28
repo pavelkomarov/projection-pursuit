@@ -9,7 +9,7 @@ Welcome to projection-pursuit's documentation!
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* :ref:`auto_examples/plot_classifier`
-* :ref:`auto_examples/plot_regressor`
-* :ref:`auto_examples/plot_transformer`
-* :ref:`auto_examples/viz_training_process`
+* :ref:`classifier example <auto_examples/plot_classifier.html>`
+* :ref:`regresssor example <auto_examples/plot_regressor.html>`
+* :ref:`transformer example <auto_examples/plot_transformer.html>`
+* :ref:`training process <auto_examples/viz_training_process.html>`
