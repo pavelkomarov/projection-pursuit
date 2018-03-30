@@ -8,6 +8,7 @@
 
 \title{The Gory Details}
 \author{Pavel Komarov}
+\date{March 12, 2018}
 \maketitle
 
 Here lies a full explanation of how multivariate Projection Pursuit Regression (PPR) and univariate Classification work, to the degree I currently understand. It is as much for me as for you, because I much prefer my own notation, and every time I have to dig in to the bones of the code and faff with the loss function, I end up having to refer to \href{http://www.slac.stanford.edu/cgi-wrap/getdoc/slac-pub-3824.pdf}{the original paper}'s somewhat ambiguous, derivationless equations. Formerly I was attempting to deposit some of this knowledge in code comments, but they took up too much space while somehow remaining marvelously unreadable.
@@ -48,6 +49,10 @@ where:
 	\item $\otimes$ is an outer product
 \end{itemize}
 
+This can be ``vectorized" as
+
+$$\pmb{\hat{Y}} = \sum_{j=1}^r f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
+
 I also term this the ``evaluation function". It may seem complicated, but the idea is simple:
 
 \begin{enumerate}
@@ -77,7 +82,7 @@ where:
 	\item $\hat{y_i}$ (``y-i-hat") is the answer predicted by the model for example $i$
 \end{itemize}
 
-In words: get as close as you can for all examples. (TODO: There should maybe be some regularization here too. It will be handy later to have all this calculus lying around.)
+In words: get as close as you can for all examples. (TODO: There should maybe be some regularization here too.)
 
 Plugging the evaluation function in to the cost function yields a relationship between model parameters and cost or ``loss". Because there are multiple dimensions in our vector $\vec{y_i}$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
 
@@ -92,6 +97,18 @@ where this new fauna:
 	\item $y_{ik}$ is the scalar $k$\textsuperscript{th} entry in the vector $\vec{y_i}$, itself the $i$\textsuperscript{th} row of $\pmb{Y}$
 	\item $\beta_{jk}$ is the scalar $k$\textsuperscript{th} entry of $\vec{\beta_j}$ from the evaluation function
 \end{itemize}
+
+This can be vectorized as
+
+$$loss = (\vec{w_I}^T \cdot (\pmb{Y} - \pmb{\hat{Y}})^2) \cdot \vec{w_K}$$
+
+where
+\begin{itemize}
+	\setlength\itemsep{-2mm}
+	\item $\vec{w_I}$ is an $n$-vector containing all example weights, $w_i$
+	\item $\vec{w_K}$ is a $d$-vector containing all output dimension weights, $w_k$
+\end{itemize}
+and the sums disappear inside the inner products.\newline
 
 The parameters we need to optimize to make the PPR ``learn" are $\vec{\alpha_j}$, $f_j$, and $\vec{\beta_j}$. $w_k$ are hyperparameters chosen by the user, just as $r$ is chosen. If output dimensions are on differing scales and the user wishes for the loss to be relative to those scales, then choosing $w_k$ inversely proportional to the variance of outputs causes the loss to treat outputs more evenly. If some output dimensions are more important than others, then setting their weights higher causes predictions in those dimensions to be closer.
 
@@ -113,7 +130,7 @@ The macroscopic optimization scheme to solve for so many different parameters is
 
 The inner loop here is a form of \textit{alternating optimization}, wherein all parameters except one are held constant, the best setting for that parameter given those constants is found, and the process cycled through all parameters until convergence. The outer loop builds up the additive model.
 
-But this leaves some details unexplained. How exactly is the residual found? How are parameters found given fixed solutions to the others?
+But this leaves some details unexplained. How exactly is the residual found? How are parameters found given fixed solutions to the others? How do we test for convergence?
 
 \subsection{Finding The Residual}
 
@@ -137,7 +154,7 @@ $$\pmb{R}_j = \pmb{Y} - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha_t}) \otime
 
 $$loss\ for\ the\ jth\ term,\ L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
-To optimize wi\textsuperscript{th} respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta_j}$ as the parameter of interest.
+To optimize with respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta_j}$ as the parameter of interest.
 
 $$\frac{\partial L_j}{\partial \beta_{jk'}} = \sum_{i=1}^n w_i w_{k'} [2(r_{ijk'} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk'})(-f_j(\vec{x_i} \cdot \vec{\alpha_j}))] = 0$$
 
@@ -149,7 +166,7 @@ $$ -2 w_{k'} \sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})] + 2
 
 $$\rightarrow \beta_{jk'} = \frac{\sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})]}{\sum_{i=1}^n w_i [f_j^2(\vec{x_i} \cdot \vec{\alpha_j})]}$$
 
-This can be vectorized to find all entries of $\vec{\beta_j}$ at once. Notice that all $f_j(\vec{x_i} \cdot \vec{\alpha_j})$ can be stacked together in an $n$-vector $f_j(\pmb{X} \cdot \vec{\alpha_j})$, that all weights $w_i$ can be stacked together as an $n$-vector $\vec{w_I}$, that the residuals come from $\pmb{R}_j$, and that the sums iterate the length-$n$ dimensions of these objects:
+This can be vectorized to find all entries of $\vec{\beta_j}$ at once. Notice that all $f_j(\vec{x_i} \cdot \vec{\alpha_j})$ can be stacked together in an $n$-vector $f_j(\pmb{X} \cdot \vec{\alpha_j})$, that $\vec{w_I}$ is an $n$-vector, that the residuals come from $\pmb{R}_j$, and that the sums iterate the length-$n$ dimensions of these objects:
 
 $$ \vec{\beta_j} = \frac{\pmb{R}_j^T \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j)}$$
 
@@ -173,8 +190,6 @@ $$\rightarrow f_{i'j} = \frac{\sum_{k=1}^d w_k r_{i'jk} \beta_{jk}}{\sum_{k=1}^d
 As in the case of $\vec{\beta_j}$, this can be vectorized.
 
 $$ f_j(\pmb{X} \cdot \vec{\alpha_j}) = \frac{\pmb{R}_j \cdot (\vec{w_K} \odot \vec{\beta_j})}{\vec{\beta_j} \cdot (\vec{w_K} \odot \vec{\beta_j})}$$
-
-where $\vec{w_K}$ is a vector containing all output dimension weights, $w_k$.\newline
 
 This provides targets for the funtion $f_j$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important to fit than others.
 
@@ -225,6 +240,14 @@ On the left side is a $p \times p$ matrix, and on the right a $p \times 1$ vecto
 $$ \vec{\alpha_j} = \vec{\alpha_j} + \vec{\delta} $$
 
 In practice $\vec{\alpha_j}$ is renormalized after this update to avoid numerical drift and keep it from blowing up. Because $\vec{\alpha_j}$ is a projection vector only meant to flatten the data along some dimension, its magnitude does not really matter.
+
+\subsection{Testing for Convergence}
+
+Parameters are considered ``converged" when their values across iterations cause a small-enough change in the value of the loss function.
+
+Because we calculate loss for each stage independently, we can make use the convenient identity
+
+$$\pmb{Y} - \pmb{\hat{Y}} = \pmb{R}_j - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
 
 \section{Classification}
 

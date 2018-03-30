@@ -324,8 +324,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			diff = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
 			# square the difference, multiply rows by example weights, multiply
 			# columns their weights, and sum to get the final loss
-			diff_sq_w = ((diff**2).T * self._example_weights).T # weighted diff
-			loss = numpy.sum(self._out_dim_weights * diff_sq_w)
+			loss = numpy.dot(numpy.dot(self._example_weights, diff**2),
+				self._out_dim_weights)
 			itr += 1
 
 	def _backfit(self, X, Y, j, fit_weights):
@@ -358,9 +358,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				self._fit_stage(X, Y, t, fit_weights)
 
 			prev_loss = loss
-			diff = Y - self.predict(X)
-			diff_sq_w = ((diff**2).T * self._example_weights).T # weighted diff
-			loss = numpy.sum(self._out_dim_weights * diff_sq_w)
+			diff = Y - self.predict(X).reshape(Y.shape)
+			loss = numpy.dot(numpy.dot(self._example_weights, diff**2),
+				self._out_dim_weights)
 			itr += 1
 
 	def _fit_2d(self, x, y, j, itr):
