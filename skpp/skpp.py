@@ -323,7 +323,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# difference between Y and the predictions. 
 			diff = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
 			# square the difference, multiply rows by example weights, multiply
-			# columns their weights, and sum to get the final loss
+			# columns by their weights, and sum to get the final loss
 			loss = numpy.dot(numpy.dot(self._example_weights, diff**2),
 				self._out_dim_weights)
 			itr += 1
