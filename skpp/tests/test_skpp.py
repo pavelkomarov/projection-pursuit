@@ -39,7 +39,6 @@ def test_construction_errors():
 	assert_raises(ValueError, ProjectionPursuitRegressor, out_dim_weights=numpy.array([-1]))
 	assert_raises(ValueError, ProjectionPursuitRegressor, eps_stage=-0.1)
 	assert_raises(ValueError, ProjectionPursuitRegressor, stage_maxiter=0)
-	assert_raises(ValueError, ProjectionPursuitClassifier, example_weights=None)
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix=numpy.array([-1]))
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix=numpy.array([1]))
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix='whereami?')
