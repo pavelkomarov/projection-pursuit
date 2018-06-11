@@ -437,11 +437,6 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 
 		# Do parameter checking for parameters that will not be checked when
 		# the inner PPR model is constructed.
-		if example_weights is not 'uniform':
-			try:
-				example_weights = as_float_array(example_weights)
-			except (ValueError, TypeError) as error:
-				raise ValueError('example_weights must be uniform or array-like.')
 		if pairwise_loss_matrix is not None:
 			try:
 				pairwise_loss_matrix = as_float_array(pairwise_loss_matrix)
