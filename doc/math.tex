@@ -53,14 +53,14 @@ This can be ``vectorized" as
 
 $$\pmb{\hat{Y}} = \sum_{j=1}^r f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
 
-where the "hat" \string^ distinguishes the answers predicted, as opposed known training answers.\newline
+where the ``hat" \string^ distinguishes the answers predicted, as opposed to known training answers.\newline
 
 I also term this the ``evaluation function". It may seem complicated, but the idea is simple:
 
 \begin{enumerate}
 	\setlength\itemsep{-2mm}
 	\item Linearly project the input down to one dimension where it is easier to work with, thereby sidestepping the curse of dimensionality.
-	\item Find a sensible mapping from this reduced space to ``residuals", linear combinations of variance in the output. This is where the nonlinearity happens.
+	\item Find a sensible mapping from this reduced space to weighted ``residuals", unexplained variance in the outputs. This is where the nonlinearity happens.
 	\item Unpack from the single-dimensional residual space to the output space with a kind of inverse projection.
 \end{enumerate}
 
@@ -79,12 +79,18 @@ where:
 	\setlength\itemsep{-2mm}
 	\item $i$ iterates all training examples
 	\item $n$ is the total number of training examples
-	\item $w_i$ the weight of the $i$\textsuperscript{th} example
+	\item $w_i$ is the weight of the $i$\textsuperscript{th} example
 	\item $y_i$ is the known answer for example $i$
 	\item $\hat{y_i}$ (``y-i-hat") is the answer predicted by the model for example $i$
 \end{itemize}
 
-In words: get as close as you can for all examples. (TODO: There should maybe be some regularization here too.)
+In words: Get as close as you can for all examples, where the penalty for predicting an example incorrectly scales with the square of how wrong you are.
+
+There are other choices of loss function, including an absolute value loss with no square penalty. This can work better in cases where a nonliner penalty might causes the algorithm to account too strongly for a few outlier examples.
+
+(TODO) It is also possible to add regularization terms, which bias the optimization process to find smaller parameter values. This is good for numerical stability and can have the added benefit of reducing the likelihood of overfit.
+
+Unfortunately, modifying the loss function in either of these ways this way means altering the optimization process.\newline
 
 Plugging the evaluation function in to the cost function yields a relationship between model parameters and loss. Because there are multiple dimensions in our vector $\vec{y_i}$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
 
@@ -152,7 +158,7 @@ In practice we will wish to find all $r_{ijk}$ for a particular $j$. Call this $
 
 $$\pmb{R}_j = \pmb{Y} - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha_t}) \otimes \vec{\beta_t}$$
 
-where $f_j(\pmb{X} \cdot \vec{\alpha_j})$ is actually an $n$-vector.
+where $f_t(\pmb{X} \cdot \vec{\alpha_t})$ is actually an $n$-vector.
 
 \subsection{Optimizing $\vec{\beta_j}$ Given $\vec{\alpha_j}$ and $f_j$}
 
@@ -170,22 +176,22 @@ $$ -2 w_{k'} \sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})] + 2
 
 $$\rightarrow \beta_{jk'} = \frac{\sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})]}{\sum_{i=1}^n w_i [f_j^2(\vec{x_i} \cdot \vec{\alpha_j})]}$$
 
-This can be vectorized to find all entries of $\vec{\beta_j}$ at once. Notice that $\vec{w_I}$ is an $n$-vector, that the residuals come from $\pmb{R}_j$, and that the sums iterate the length-$n$ dimensions of these objects:
+This can be vectorized to find all entries of $\vec{\beta_j}$ at once:
 
-$$ \vec{\beta_j} = \frac{\pmb{R}_j^T \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j)}$$
+$$ \vec{\beta_j} = \frac{\pmb{R}_j^T \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}$$
 
-where $\odot$ is a Hadamard product, and the sums disappear inside the inner products.
+where $\odot$ is a Hadamard product, $\vec{w_I}$ is an $n$-vector, $\pmb{R}_j$ is the residuals, and the dot products are taken along the length-$n$ dimensions of these objects.
 
 \subsection{Optimizing $f_j$ Given $\vec{\alpha_j}$ and $\vec{\beta_j}$}
 
 Now a similar argument, but this time consider the parameter of interest to be $f_{i'j}$, the $i$\textsuperscript{th} entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f$ to each entry.
 
 
-$$\frac{\partial L_j}{\partial f_{i'j}} = \sum_{k=1}^d w_k w_{i'} [2(r_{i'jk} - f_{i'j} \otimes \beta_{jk})(-\beta_{jk})] = 0$$
+$$\frac{\partial L_j}{\partial f_{i'j}} = w_{i'} \sum_{k=1}^d w_k [2(r_{i'jk} - f_{i'j} \otimes \beta_{jk})(-\beta_{jk})] = 0$$
 
 The sum over $i$ disappears because only the single term where $i=i'$ isn't constant to the derivative.
 
-$$\rightarrow w_i \sum_{k=1}^d w_k [-2 r_{i'jk} \beta_{jk} + 2 f_{i'j} \beta_{jk}^2 ] = 0$$
+$$\rightarrow w_{i'} \sum_{k=1}^d w_k [-2 r_{i'jk} \beta_{jk} + 2 f_{i'j} \beta_{jk}^2 ] = 0$$
 
 $$\rightarrow 2 f_{i'j} \sum_{k=1}^d w_k \beta_{jk}^2 = 2 \sum_{k=1}^d w_k r_{i'jk} \beta_{jk}$$
 
@@ -195,7 +201,7 @@ As in the case of $\vec{\beta_j}$, this can be vectorized.
 
 $$ f_j(\pmb{X} \cdot \vec{\alpha_j}) = \frac{\pmb{R}_j \cdot (\vec{w_K} \odot \vec{\beta_j})}{\vec{\beta_j} \cdot (\vec{w_K} \odot \vec{\beta_j})}$$
 
-This provides targets for the funtion $f_j$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important to fit than others.
+This provides targets for the funtion $f_j$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important than others.
 
 \subsection{Optimizing $\vec{\alpha_j}$ Given $\vec{\beta_j}$ and $f_j$}
 
@@ -233,7 +239,7 @@ where $w_u$ is $\vec{w_I}[u]$, the $u$\textsuperscript{th} example weight.
 
 $$= -\sqrt{w_k} \beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha_j})) \odot \pmb{X}$$
 
-where that last $\odot$ is with each column of $\pmb{X}$ individually.\newline
+where everything left of the last $\odot$ simplifies to an $n$-vector, so the Hadamard product is taken with each column of $\pmb{X}$ individually.\newline
 
 As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $g$ is given by the solution $\vec{\delta}$ to:
 
@@ -249,9 +255,11 @@ In practice $\vec{\alpha_j}$ is renormalized after this update to avoid numerica
 
 Parameters are considered ``converged" when their values across iterations cause a small-enough change in the value of the loss function.
 
-Because we calculate loss for each stage independently, we can make use the convenient identity
+Because we only make updates to the parameters governing stage $j$, we can make use the convenient identity
 
 $$\pmb{Y} - \pmb{\hat{Y}} = \pmb{R}_j - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
+
+to calculate the loss quickly.
 
 \section{Classification}
 
@@ -359,6 +367,6 @@ Vectorizing to obtain this weight for all classes at once we get:
 
 $$\vec{w_C} = \frac{\vec{w_I} \cdot \pmb{H}}{\sum_{i=1}^n \pmb{H}} \odot \sum_{k=1}^q \pmb{L}$$
 
-where $\pmb{L}[c,k] = l_{ck}$, the sum over $q$ amounts to a sum along the horizontal (second) axis, the sum over $n$ of $\pmb{H}$ amounts to a sum along the vertical (first) axis, and the division is pointwise on the vectors involved.
+where $\pmb{L}[c,k] = l_{ck}$, the sum over $k$ amounts to a sum along the horizontal (second) axis, the sum over $n$ of $\pmb{H}$ amounts to a sum along the vertical (first) axis, and the division is pointwise on the vectors involved.
 
 \end{document}
