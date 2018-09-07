@@ -90,7 +90,7 @@ There are other choices of loss function, including an absolute value loss with 
 
 (TODO) It is also possible to add regularization terms, which bias the optimization process to find smaller parameter values. This is good for numerical stability and can have the added benefit of reducing the likelihood of overfit.
 
-Unfortunately, modifying the loss function in either of these ways this way means altering the optimization process.\newline
+Unfortunately, modifying the loss function in either of these ways means altering the optimization process.\newline
 
 Plugging the evaluation function in to the cost function yields a relationship between model parameters and loss. Because there are multiple dimensions in our vector $\vec{y_i}$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
 
