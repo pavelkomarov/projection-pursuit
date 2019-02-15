@@ -217,15 +217,15 @@ where $\vec{r_{jk}}$ is the $n$-vector formed by stacking $r_{ijk} \forall i$ to
 
 The weights can be factored in to the square to yield a form solveable with \href{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm#Description}{Gauss-Newton}.
 
-$$L_j = \sum_{k=1}^d \vec{g_{jkw}}^2$$
+$$L_j = \sum_{k=1}^d \vec{g_{jkw}}(\vec{\alpha_j})^2,$$
 
 $$\vec{g_{jkw}} = \sqrt{w_k} \sqrt{\vec{w_I}} \odot (\vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk})$$
 
 Find the Jacobian:
 
-$$J_{jk}[u,v] = \frac{\partial g_{jkw}[u](\vec{\alpha_j})}{\partial \vec{\alpha_j}[v]} = -\sqrt{w_k} \sqrt{w_u} \dot{f_j}(\vec{x_u} \cdot \vec{\alpha_j}) \beta_{jk} x_{uv}$$
+$$J_{jk}[u,v] = \frac{\partial \vec{g_{jkw}}(\vec{\alpha_j})[u]}{\partial \vec{\alpha_j}[v]} = -\sqrt{w_k} \sqrt{w_u} \dot{f_j}(\vec{x_u} \cdot \vec{\alpha_j}) \beta_{jk} x_{uv}$$
 
-where $w_u$ is $\vec{w_I}[u]$, the $u$\textsuperscript{th} example weight.
+where $w_u$ is $\vec{w_I}[u]$, the $u$\textsuperscript{th} example weight, as distinct from $w_k$, which, remember, are output dimension weights.
 
 \[
 \rightarrow J_{jk} = -\sqrt{w_k} \beta_{jk}
@@ -241,7 +241,7 @@ $$= -\sqrt{w_k} \beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{
 
 where everything left of the last $\odot$ simplifies to an $n$-vector, so the Hadamard product is taken with each column of $\pmb{X}$ individually.\newline
 
-As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $g$ is given by the solution $\vec{\delta}$ to:
+As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $\vec{g_{jkw}}$ is given by the solution $\vec{\delta}$ to:
 
 $$\left[ \sum_{k=1}^d J_{jk}^T J_{jk} \right] \vec{\delta} = \sum_{k=1}^d J_{jk}^T \vec{g_{jkw}}$$
 
