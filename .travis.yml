@@ -5,13 +5,14 @@ language: python
 
 python:
 - 2.7
-- 3.5
+- 3.6
 
 install:
-- pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery pillow
+  - pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery pillow
 
 script:
-  - sphinx-build -a -q doc out
+  - sphinx-build doc out
+  - pdflatex -output-directory=out doc/math.tex
   # use coverage to run "pytest -s" as the main module (-m) using skpp as the code to measure (--source)
   - coverage run --source=skpp -m pytest -s
 
@@ -38,4 +39,5 @@ deploy:
     on:
       tags: true
       branch: master
-      python: '3.5'
+      python: '3.6'
+

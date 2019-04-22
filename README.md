@@ -2,7 +2,7 @@
 [![Travis Status](https://travis-ci.org/pavelkomarov/projection-pursuit.svg?branch=master)](https://travis-ci.org/pavelkomarov/projection-pursuit)
 [![Coverage Status](https://coveralls.io/repos/github/pavelkomarov/projection-pursuit/badge.svg?branch=master&service=github)](https://coveralls.io/github/pavelkomarov/projection-pursuit?branch=master&service=github)
 
-[Documentation](https://rawgit.com/pavelkomarov/projection-pursuit/gh-pages/skpp.html), [How it works](https://rawgit.com/pavelkomarov/projection-pursuit/master/doc/math.pdf).
+[Documentation](https://pavelkomarov.com/projection-pursuit/skpp.html), [How it works](https://pavelkomarov.com/projection-pursuit/math.pdf).
 
 This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-compatible estimators based on Jerome Friedman's generalizations[1] of his and Werner Stuetzle's *Projection Pursuit Regression* algorithm[2][3]. A regressor capable of multivariate estimation and a classifier based on regression to a one-hot multivariate representation are included.
 
