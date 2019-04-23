@@ -7,7 +7,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils import as_float_array, check_random_state, check_array
 from matplotlib import pyplot
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
 	"""This class implements the PPR algorithm as detailed in math.pdf.
@@ -206,13 +206,14 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		if isinstance(self.out_dim_weights, str) and \
 			self.out_dim_weights == 'inverse-variance':
 			variances = Y.var(axis=0)
-			if max(variances) == 0:
-				raise ValueError('Y must have some variance.')
 			# There is a problem if a variance for any column is zero, because
-			# its relative scale will appear infinite. Fill zeros with the max
-			# of variances, so the corresponding columns have small weight and
-			# are not major determiners of loss.
-			variances[variances == 0] = max(variances)
+			# its relative scale will appear infinite. 
+			if max(variances) == 0: # if all zeros, don't readjust weights
+				variances = numpy.ones(Y.shape[1])
+			else:
+				# Fill zeros with the max of variances, so the corresponding
+				# columns have small weight and are not major determiners of loss.
+				variances[variances == 0] = max(variances)
 			self._out_dim_weights = 1./variances
 		elif isinstance(self.out_dim_weights, str) and \
 			self.out_dim_weights == 'uniform':
@@ -491,14 +492,9 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		self.classes_ = unique_labels(Y) # also performs some input validation.
 
 		# Encode the input Y as a multi-column H.
-		# TODO: CategoricalEncoder coming in sklearn v0.20 can simplify this.
-		if Y.dtype.char in ['S', 'U', 'O']: # special handling for string types
-			self._labeler = LabelEncoder()
-			Y = self._labeler.fit_transform(Y[:,0]).reshape(-1, 1)
-		else:
-			self._labeler = None
-		self._encoder = OneHotEncoder() # can take numerical input
-		H = self._encoder.fit_transform(Y).A # .A gets the full numpy array
+		# sparse=False until numpy fixes crazy sparse matrix dot() behavior
+		self._encoder = OneHotEncoder(categories='auto', sparse=False)
+		H = self._encoder.fit_transform(Y)
 
 		# Calculate the weights. See section 4 of math.pdf.
 		if self.example_weights is not 'uniform':
@@ -540,11 +536,15 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		"""
 		check_is_fitted(self, '_ppr')
 		H = self._ppr.predict(X)
-		if H.ndim == 1: # sklearn expects a 1D answer from predict some times
-			H = H.reshape(-1, 1) # but here need 2D
 
-		# argmax gives the index of the most likely class. Map back to the class
-		# itself with the encoder's active_features_ array.
-		numerical_classes = self._encoder.active_features_[numpy.argmax(H, axis=1)]
-		return self._labeler.inverse_transform(numerical_classes) if \
-			self._labeler else numerical_classes
+		if H.ndim == 1: # OneHotEncoder needs 2D
+			H = H.reshape(-1, 1)
+
+		# Encoder does the argmax over columns itself to find the index of the
+		# most likely class then maps back to the class itself.
+		H = self._encoder.inverse_transform(H)
+
+		if H.shape[1] == 1: # because sklearn's tests want a 1D output given
+			return H.ravel()		# a 1D input. Kind of pedantic.
+		return H
+
