@@ -6,6 +6,8 @@
 
 This repository is home to a couple [scikit-learn](http://scikit-learn.org/)-compatible estimators based on Jerome Friedman's generalizations[1] of his and Werner Stuetzle's *Projection Pursuit Regression* algorithm[2][3]. A regressor capable of multivariate estimation and a classifier based on regression to a one-hot multivariate representation are included.
 
+This repository is also meant to serve as a fairly pared-down example of how to use TravisCI, Coveralls, Sphinx, PyTest, how to deploy to PyPI and Github Pages, and how to create a Scikit-Learn Estimator that passes the sklearn checks and follows the PEP 8 style standard.
+
 ## Installation and Usage
 The package by itself comes with a single module containing the estimators. Before
 installing the module you will need `numpy`, `scipy`, `scikit-learn`, and `matplotlib`.
