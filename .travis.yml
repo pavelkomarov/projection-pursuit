@@ -1,47 +1,36 @@
-# https://docs.travis-ci.com/user/getting-started/
-# https://docs.travis-ci.com/user/customizing-the-build/
-# http://lint.travis-ci.org/
 language: python
-
 python:
 - 2.7
 - 3.6
-
 before_install:
-  - sudo apt-get install texlive-latex-base texlive-latex-extra
-
+- sudo apt-get install texlive-latex-base texlive-latex-extra
 install:
-  - pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery pillow
-
+- pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery
+  pillow
 script:
-  - sphinx-build doc out
-  - pdflatex -output-directory=out doc/math.tex
-  # use coverage to run "pytest -s" as the main module (-m) using skpp as the code to measure (--source)
-  # run tests locally with `python3 -m pytest -s`
-  - coverage run --source=skpp -m pytest -s
-
+- sphinx-build doc out
+- pdflatex -output-directory=out doc/math.tex
+- coverage run --source=skpp -m pytest -s
 after_success:
-  - coveralls
-
+- coveralls
 notifications:
   email:
   - pvlkmrv@gmail.com
-
 deploy:
-  - provider: pages
-    skip-cleanup: true
-    github-token:
-      secure: sCdH3vtCZG30vLtmYYT0uvY1OZejv42t3ctTKbRi5NxixrNWK6qAuOsF7p2Q9oHu7O9EUSDHoVtcGCDtRd6CScFQ+bIK7HjVL13SvxSNMObs+MkjmfwtWQw7MONsrb/yQlf+/GwNQ5WDSU7iwM8ZURlmtKLyDGr9pZvBGrf/jCL7HN5+0czyPyGlUF3otGPh6djDWYlNfQFETEmdQESomdxXyOlhm5y6++ykBpmTuGQfag77V4c/HM+IbcppS8K3g0GTGVlFsvrdYG2gQAh4vwKc8aDsGdhjRMgVhhfNVvI7ZJNEbM2Wehn1unUYPJSYoP9jKNgnS+vBcuN/IEzR73zC2TcBW0QFe80+HZjEXdXRWxDJWy6UHa6B0aFYRl+WrDqxgk5oDmpBgUDMevy9/tnive3Ngijb0K8hWT4BKMkVZdhWs0DaEFev9x1SAk5Y3S64B6IfKQ0NB+skTmb+zWUAVeBO29FAXm08wFgseWGc+R0VbPk5yGJp00doXtcbC38QuYZphqJ6LFNvee0muCuXlW3YJKwXJAV7rS/GU0j0Ox2vXbd1+bZjUQigSQg2Li15nxrTZobXQiL6PKoxQIul8MM7G553TcScWQzIG50p+N5PBwcnHV13Lr7IGp0i4w/3b6eXcp9OwQ0U6jXiVnkRPz0cH5Q6F6yyjuENcqQ=
-    local-dir: out
-    on:
-      branch: master
-      python: '2.7'
-  - provider: pypi
-    user: pavelkomarov
-    password:
-      secure: L12e2JIGYwgiK+0s1pp2A/OsdZmRQALXbMTEjOWTNurWhTxXZZJ9R+M6U2M9ZmkxZ6we3maZ3Bcuv10zzvi/LoE0VIgaaL+kLHYkq1hPe83wxdmEepk4/uzIABy6XKunx59ennMJSaMZM+9Ks5VzZ1GuVhKhpt13FQQbbKX4uw9lywalzkuKbyD20boaJeJfKAkXguQAzquZB1+n1cpeKO/2qkMQ+2M6iSIT+kM0qPZrS6xJ5ENrjxlDqIuDLlw/XZqRUyEdm9SKDYycq9Imw5aOFI2uTyrjowBlTRNTqbclo6NOak4YQ5zGzk0Rqq2tQKXgamEhmF5JwACQo1DsJapK7ihJC+blSIlkDSvrmUivgjJmF8GdFzgSumek60MRwqqs9t9PdmV/p3rzm+nlcstpwh3s7DVMTLMGkXXqdr2CJAQXFb0QRag6chURAPRSA4N6Z8bm45LURwJq5mHetm9tbxQHoWwV1/SIjQ2wgAeTZNog1jCk/4LSdDCTrAx1/0MVjVUOIY+hlH4UvZDS61CSeDEZUH4HTttz+Zbf01byu63LyC6mg7WwTMRHGc8T36c/XPrKzgSVkLqeDOZVani9hakUvcHT5EyMYXUZmECQ7GTHRB4Ttf2wREPSIRX1FdOnm10+JUb9YqRkVHbvb/ye+1l1DNLcmBNGOLyQb9M=
-    on:
-      tags: true
-      branch: master
-      python: '3.6'
+- provider: pages
+  skip-cleanup: true
+  github-token:
+    secure: ussc3utC0qItZp+XeU8+xmhi4uGTbYzlDZBDwVwF9+tJA38fQ6gVG0k0T+OkGhMHp8Ifpjx6Z9f65D155pRocOfkOgGds9E9IA3QQWqzmx4Wi1FmbI9A4mgI/9UOwx3ceHykrTSDsAT84Cc++p6esXYog0ZEpNYP9j5NreGLlW7QT8ijFOUsY/VA3afaIwq3KZZy4zUF/Rhmn/rSH9xTw6Zn2tbBGL0k/hklzmWBwCbw7KEii0BXo5POX5IQGeF5x9k6QIARnpKVJWipXPL84fbhZPUDN9HY/5hdRCbp9Zwaqjl5nZf6kaaLcveCUDNxb3lfVr5hJf0RcHEt2eyxed5cTpO0h3qGesD4yNPOWTd0Pz5iJfocp6qzcue9mjYUGAljQby7WhLg8UdB3W+oOdtKfe9CPuzUqHo7/tzU1miAPjPh9xoGhebOFgABxjMLVDz0+ZaX1WxklbetnYu+BEe2DWofwOHD+WfgaM6vuXDWcgU+jbHMWCYEHxOCcuezyNGlxhdEFNy3E4dQ957orn4NroNlUKihh1y0LjJ3wqpNGp9XUJitJTLIHnBsaBOJNAza2heaIL63YDhQrkxt9hHV23S06w++MFzURLx3CIQVZcwu8NFOVEbiwcS5mKQ0gNjjOmJMAJGXYiF2HslwGV+Ajeixo1bX9BtzisXGduw=
+  local-dir: out
+  on:
+    branch: master
+    python: '2.7'
+- provider: pypi
+  user: pavelkomarov
+  password:
+    secure: L12e2JIGYwgiK+0s1pp2A/OsdZmRQALXbMTEjOWTNurWhTxXZZJ9R+M6U2M9ZmkxZ6we3maZ3Bcuv10zzvi/LoE0VIgaaL+kLHYkq1hPe83wxdmEepk4/uzIABy6XKunx59ennMJSaMZM+9Ks5VzZ1GuVhKhpt13FQQbbKX4uw9lywalzkuKbyD20boaJeJfKAkXguQAzquZB1+n1cpeKO/2qkMQ+2M6iSIT+kM0qPZrS6xJ5ENrjxlDqIuDLlw/XZqRUyEdm9SKDYycq9Imw5aOFI2uTyrjowBlTRNTqbclo6NOak4YQ5zGzk0Rqq2tQKXgamEhmF5JwACQo1DsJapK7ihJC+blSIlkDSvrmUivgjJmF8GdFzgSumek60MRwqqs9t9PdmV/p3rzm+nlcstpwh3s7DVMTLMGkXXqdr2CJAQXFb0QRag6chURAPRSA4N6Z8bm45LURwJq5mHetm9tbxQHoWwV1/SIjQ2wgAeTZNog1jCk/4LSdDCTrAx1/0MVjVUOIY+hlH4UvZDS61CSeDEZUH4HTttz+Zbf01byu63LyC6mg7WwTMRHGc8T36c/XPrKzgSVkLqeDOZVani9hakUvcHT5EyMYXUZmECQ7GTHRB4Ttf2wREPSIRX1FdOnm10+JUb9YqRkVHbvb/ye+1l1DNLcmBNGOLyQb9M=
+  on:
+    tags: true
+    branch: master
+    python: '3.6'
 
