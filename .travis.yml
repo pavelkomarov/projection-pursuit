@@ -1,12 +1,9 @@
 language: python
-python:
-- 2.7
-- 3.6
+python: 3.6
 before_install:
 - sudo apt-get install texlive-latex-base texlive-latex-extra
 install:
 - pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery
-  pillow
 script:
 - sphinx-build doc out
 - pdflatex -output-directory=out doc/math.tex
@@ -24,7 +21,6 @@ deploy:
   local-dir: out
   on:
     branch: master
-    python: '2.7'
 - provider: pypi
   user: pavelkomarov
   password:
@@ -32,5 +28,4 @@ deploy:
   on:
     tags: true
     branch: master
-    python: '3.6'
 
