@@ -1,7 +1,7 @@
 import numpy
 from scipy.interpolate import UnivariateSpline
 from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin, \
-	ClassifierMixin
+	ClassifierMixin, MultiOutputMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
@@ -9,7 +9,8 @@ from sklearn.utils import as_float_array, check_random_state, check_array
 from matplotlib import pyplot
 from sklearn.preprocessing import OneHotEncoder
 
-class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin):
+class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin,
+	MultiOutputMixin):
 	"""This class implements the PPR algorithm as detailed in math.pdf.
 
 	Parameters

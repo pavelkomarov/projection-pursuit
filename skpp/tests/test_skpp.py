@@ -18,16 +18,13 @@ from sklearn.utils.testing import assert_warns_message
 
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
-@pytest.mark.fast_test
 def test_regressor_passes_sklearn_checks():
-	estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
+	#estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
 	estimator_checks.check_estimator(ProjectionPursuitRegressor)
 
-@pytest.mark.fast_test
 def test_classifier_passes_sklearn_checks():
 	estimator_checks.check_estimator(ProjectionPursuitClassifier)
 
-@pytest.mark.fast_test
 def test_construction_errors():
 	assert_raises(ValueError, ProjectionPursuitRegressor, r=0)
 	assert_raises(NotImplementedError, ProjectionPursuitRegressor, fit_type='jabberwocky')
@@ -43,7 +40,6 @@ def test_construction_errors():
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix=numpy.array([1]))
 	assert_raises(ValueError, ProjectionPursuitClassifier, pairwise_loss_matrix='whereami?')
 
-@pytest.mark.fast_test
 def test_fit_errors():
 	ppc = ProjectionPursuitClassifier(example_weights=numpy.array([1, 2]))
 	ppr = ProjectionPursuitRegressor(example_weights=numpy.array([1,2]),
@@ -57,7 +53,6 @@ def test_fit_errors():
 	assert_raises(ValueError, ppc.fit, X, Y)
 	assert_raises(ValueError, ppr.fit, X, Y)
 
-@pytest.mark.fast_test
 def test_example_weightings_applied():
 	# Construct a 1D example constrained to deg=2. No polynomial of such low
 	# order can go through all the points, so weights determine which should be
@@ -88,7 +83,6 @@ def test_example_weightings_applied():
 
 		assert_array_equal(predictions, targets[i,:])
 
-@pytest.mark.fast_test
 def test_ppr_learns():
 	# Generate some dummy data, X random, Y an additive-model-like construction
 	n = 1000
