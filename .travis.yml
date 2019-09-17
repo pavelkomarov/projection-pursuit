@@ -1,7 +1,7 @@
 language: python
 python: 3.6
 before_install:
-- sudo apt-get install texlive-latex-base texlive-latex-extra
+- sudo apt-get install texlive
 install:
 - pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery
 script:
