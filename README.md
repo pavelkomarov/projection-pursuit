@@ -1,6 +1,7 @@
 # Projection Pursuit
 [![Travis Status](https://travis-ci.org/pavelkomarov/projection-pursuit.svg?branch=master)](https://travis-ci.org/pavelkomarov/projection-pursuit)
 [![Coverage Status](https://coveralls.io/repos/github/pavelkomarov/projection-pursuit/badge.svg?branch=master&service=github)](https://coveralls.io/github/pavelkomarov/projection-pursuit?branch=master&service=github)
+[![Downloads](https://pepy.tech/badge/projection-pursuit)](https://pepy.tech/project/projection-pursuit)
 
 [Documentation](https://pavelkomarov.com/projection-pursuit/skpp.html), [How it works](https://pavelkomarov.com/projection-pursuit/math.pdf).
 
