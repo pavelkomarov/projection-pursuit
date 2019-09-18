@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{hyperref}
+\hypersetup{colorlinks=true, pdfborderstyle={/S/U/W 1}}
 \DeclareMathOperator*{\argmax}{argmax}
 \begin{document}
 
@@ -13,7 +14,7 @@
 
 Here lies a full explanation of how multivariate Projection Pursuit Regression (PPR) and univariate Classification work, to the degree I currently understand. It is as much for me as for you, because I much prefer my own notation, and every time I have to dig in to the bones of the code and faff with the loss function, I end up having to refer to \href{http://www.slac.stanford.edu/cgi-wrap/getdoc/slac-pub-3824.pdf}{the original paper}'s somewhat ambiguous, derivationless equations. Formerly I was attempting to deposit some of this knowledge in code comments, but they took up too much space while somehow remaining marvelously unreadable.
 
-This is all in \LaTeX\ because \href{https://github.com/github/markup/issues/897}{native math in markdown is amazingly still not supported by github}, so a \texttt{.md} would really be no less uncomfortable than code comments. If you happen to want to know how I accomplished all this gorgeous formatting, the source \texttt{.tex} is in the \href{https://github.com/pavelkomarov/projection-pursuit/tree/master/doc}{/doc} subdirectory and can be compiled with \texttt{pdflatex}.
+This is all in \LaTeX\ because \href{https://github.com/github/markup/issues/897}{native math in markdown is amazingly still not supported by github}, so a \texttt{.md} would really be no less uncomfortable than code comments. If you happen to want to know how I accomplished all this gorgeous formatting, the source \texttt{.tex} is in the \href{https://github.com/pavelkomarov/projection-pursuit/tree/master/doc}{/doc} subdirectory of the \href{https://github.com/pavelkomarov/projection-pursuit}{repo} and can be compiled with \texttt{pdflatex}.
 
 I attempt to follow a structure based on the \href{http://lmgtfy.com/?q=sorry+this+link+doesn\%27t+work+yet+I+still+have+to+post+those+slides}{five components of any machine learning algorithm}:
 
