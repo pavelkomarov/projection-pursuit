@@ -5,25 +5,16 @@ import pytest
 import time
 
 from sklearn.utils import estimator_checks
-from sklearn.utils.testing import assert_equal
-from sklearn.utils.testing import assert_less
-from sklearn.utils.testing import assert_almost_equal
-from sklearn.utils.testing import assert_array_less
-from sklearn.utils.testing import assert_array_equal
-from sklearn.utils.testing import assert_array_almost_equal
-from sklearn.utils.testing import assert_raise_message
-from sklearn.utils.testing import assert_raises
-from sklearn.utils.testing import assert_warns_message
-# https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/testing.py
+from sklearn.utils._testing import assert_raises
 
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
 def test_regressor_passes_sklearn_checks():
 	#estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
-	estimator_checks.check_estimator(ProjectionPursuitRegressor)
+	estimator_checks.check_estimator(ProjectionPursuitRegressor())
 
 def test_classifier_passes_sklearn_checks():
-	estimator_checks.check_estimator(ProjectionPursuitClassifier)
+	estimator_checks.check_estimator(ProjectionPursuitClassifier())
 
 def test_construction_errors():
 	assert_raises(ValueError, ProjectionPursuitRegressor, r=0)
@@ -81,7 +72,7 @@ def test_example_weightings_applied():
 		predictions = numpy.round(ppr.predict(numpy.array([[-1], [-0.95], [-0.9],
 			[0], [0.9], [0.95], [1]])))
 
-		assert_array_equal(predictions, targets[i,:])
+		assert numpy.array_equal(predictions, targets[i,:])
 
 def test_ppr_learns():
 	# Generate some dummy data, X random, Y an additive-model-like construction
@@ -112,7 +103,7 @@ def test_ppr_learns():
 	estimators = [ProjectionPursuitRegressor(r=20, fit_type='polyfit', degree=3,
 		opt_level='high'), ProjectionPursuitRegressor(out_dim_weights='uniform',
 		fit_type='spline', opt_level='medium')]
-	accuracies = [mse_per_element/1000000, mse_per_element/100]
+	accuracy_thresholds = [mse_per_element/1000000, mse_per_element/100] # targets to meet
 
 	for i in range(len(estimators)):
 		
@@ -132,5 +123,5 @@ def test_ppr_learns():
 		print('Average magnitude of squared error in testing data per element',
 			test_error)
 
-		assert_less(train_error, accuracies[i])
-		assert_less(test_error, accuracies[i])
+		assert train_error < accuracy_thresholds[i]
+		assert test_error < accuracy_thresholds[i]

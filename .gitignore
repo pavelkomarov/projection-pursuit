@@ -8,3 +8,4 @@
 *.log
 doctrees/
 html/
+.DS_Store
