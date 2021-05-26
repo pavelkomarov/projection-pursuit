@@ -18,13 +18,13 @@ sys.path.append('skpp')
 # -- Project information -----------------------------------------------------
 
 project = u'projection-pursuit'
-copyright = u'2018, Pavel Komarov'
+copyright = u'2021, Pavel Komarov'
 author = u'Pavel Komarov'
 
 # The short X.Y version
 version = u''
 # The full version, including alpha/beta/rc tags
-release = u'0.8'
+release = u'1.0'
 
 
 # -- General configuration ---------------------------------------------------
