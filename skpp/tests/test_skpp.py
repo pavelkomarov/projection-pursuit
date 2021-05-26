@@ -10,7 +10,6 @@ from sklearn.utils._testing import assert_raises
 from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 
 def test_regressor_passes_sklearn_checks():
-	#estimator_checks.MULTI_OUTPUT.append('ProjectionPursuitRegressor')
 	estimator_checks.check_estimator(ProjectionPursuitRegressor())
 
 def test_classifier_passes_sklearn_checks():
