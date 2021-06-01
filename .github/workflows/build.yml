@@ -33,7 +33,6 @@ jobs:
           pdflatex -output-directory=out doc/math.tex
 
       - name: deploy to pages
-        uses: crazy-max/ghaction-github-pages@v2
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          target_branch: gh-pages
-          build_dir: out
+          publish_dir: out
