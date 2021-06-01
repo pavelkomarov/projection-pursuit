@@ -7,13 +7,13 @@ jobs:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      #  with:
+      #    fetch-depth: 0
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - uses: tj-actions/changed-files@v6.3
-        id: changed-files
+      #- uses: tj-actions/changed-files@v6.3
+      #  id: changed-files
   
       - name: tests and coverage
         run: |
@@ -27,7 +27,7 @@ jobs:
           sphinx-build doc out
 
       - name: LaTeX stuff
-        if: contains(steps.changed-files.outputs.modified_files, 'doc/math.tex')
+        #if: contains(steps.changed-files.outputs.modified_files, 'doc/math.tex')
         run: |
           sudo apt-get install texlive texlive-latex-extra
           pdflatex -output-directory=out doc/math.tex
