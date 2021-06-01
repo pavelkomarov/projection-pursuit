@@ -26,7 +26,7 @@ jobs:
           sphinx-build doc out
 
       - name: LaTeX stuff
-        run |
+        run: |
           for file in "${{ steps.changed-files.outputs.all_modified_files }}"; do
             echo "$file was modified"
         #if: contains(steps.changed-files.outputs.modified_files, 'docs/math.tex')
