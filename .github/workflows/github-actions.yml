@@ -1,5 +1,4 @@
-name: github-actions
-on: [push]
+on: push
 jobs:
   do-the-thing:
     runs-on: ubuntu-latest
@@ -8,22 +7,32 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - run: sudo apt-get install texlive
-      - run: pip install numpy matplotlib scipy scikit-learn pytest coveralls sphinx sphinx-gallery
-      - run: sphinx-build doc out
-      - run: pdflatex -output-directory=out doc/math.tex
-      - run: coverage run --source=skpp -m pytest -s
-      - run: coveralls
-      - name: deploy-to-github-pages
-        if: success()
+
+      - name: test python
+        run: pip install numpy matplotlib scipy scikit-learn pytest coveralls
+        run: coverage run --source=skpp -m pytest -s
+        run: coveralls
+
+      - name: sphinx things
+        run: pip install sphinx sphinx-gallery
+        run: sphinx-build doc out
+
+      - name: LaTeX stuff
+        if: contains(on.push.paths, 'docs/math.tex')
+          run: sudo apt-get install texlive texlive-latex-extra
+          run: pdflatex -output-directory=out doc/math.tex
+
+      - name: deploy to pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
           target_branch: gh-pages
           build_dir: out
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      - on: [tag]
-#        name: deploy-to-pypi:
+
+#      - name: deploy to pypi
+#        if: on.tag
+#          run: echo 'hello world'
 #        user: pavelkomarov
 #        password:
 #        secure: L12e2JIGYwgiK+0s1pp2A/OsdZmRQALXbMTEjOWTNurWhTxXZZJ9R+M6U2M9ZmkxZ6we3maZ3Bcuv10zzvi/LoE0VIgaaL+kLHYkq1hPe83wxdmEepk4/uzIABy6XKunx59ennMJSaMZM+9Ks5VzZ1GuVhKhpt13FQQbbKX4uw9lywalzkuKbyD20boaJeJfKAkXguQAzquZB1+n1cpeKO/2qkMQ+2M6iSIT+kM0qPZrS6xJ5ENrjxlDqIuDLlw/XZqRUyEdm9SKDYycq9Imw5aOFI2uTyrjowBlTRNTqbclo6NOak4YQ5zGzk0Rqq2tQKXgamEhmF5JwACQo1DsJapK7ihJC+blSIlkDSvrmUivgjJmF8GdFzgSumek60MRwqqs9t9PdmV/p3rzm+nlcstpwh3s7DVMTLMGkXXqdr2CJAQXFb0QRag6chURAPRSA4N6Z8bm45LURwJq5mHetm9tbxQHoWwV1/SIjQ2wgAeTZNog1jCk/4LSdDCTrAx1/0MVjVUOIY+hlH4UvZDS61CSeDEZUH4HTttz+Zbf01byu63LyC6mg7WwTMRHGc8T36c/XPrKzgSVkLqeDOZVani9hakUvcHT5EyMYXUZmECQ7GTHRB4Ttf2wREPSIRX1FdOnm10+JUb9YqRkVHbvb/ye+1l1DNLcmBNGOLyQb9M=
