@@ -8,22 +8,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
       - uses: tj-actions/changed-files@v6.3
 
-      - name: tests and coverage
-        run: |
-          pip install numpy matplotlib scipy scikit-learn pytest coveralls
-          coverage run --source=skpp -m pytest -s
-          coveralls
+      #- name: tests and coverage
+      #  run: |
+      #    pip install numpy matplotlib scipy scikit-learn pytest coveralls
+      #    coverage run --source=skpp -m pytest -s
+      #    coveralls
 
-      - name: sphinx things
-        run: |
-          pip install sphinx sphinx-gallery
-          sphinx-build doc out
+      #- name: sphinx things
+      #  run: |
+      #    pip install sphinx sphinx-gallery
+      #    sphinx-build doc out
 
       - name: LaTeX stuff
         run: |
