@@ -1,4 +1,5 @@
 # Projection Pursuit
+[![Build Status](https://github.com/pavelkomarov/projection-pursuit/actions/workflows/github-actions/badge.svg)]
 [![Coverage Status](https://coveralls.io/repos/github/pavelkomarov/projection-pursuit/badge.svg?branch=master&service=github)](https://coveralls.io/github/pavelkomarov/projection-pursuit?branch=master&service=github)
 [![Downloads](https://pepy.tech/badge/projection-pursuit)](https://pepy.tech/project/projection-pursuit)
 
