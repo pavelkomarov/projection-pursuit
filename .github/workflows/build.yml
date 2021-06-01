@@ -10,6 +10,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
+      - uses: tj-actions/changed-files@v6.3
 
       - name: tests and coverage
         run: |
@@ -23,7 +24,6 @@ jobs:
           sphinx-build doc out
 
       - name: LaTeX stuff
-        uses: tj-actions/changed-files@v6.3
         run: echo steps.changed-files.outputs.modified_files
         #if: contains(steps.changed-files.outputs.modified_files, 'docs/math.tex')
         #run: |
