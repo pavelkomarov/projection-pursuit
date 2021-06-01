@@ -8,12 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
       - uses: tj-actions/changed-files@v6.3
-
+        id: changed-files
+  
       #- name: tests and coverage
       #  run: |
       #    pip install numpy matplotlib scipy scikit-learn pytest coveralls
