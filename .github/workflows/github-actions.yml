@@ -18,9 +18,9 @@ jobs:
         run: sphinx-build doc out
 
       - name: LaTeX stuff
-        if: contains(on.push.paths, 'docs/math.tex')
-          run: sudo apt-get install texlive texlive-latex-extra
-          run: pdflatex -output-directory=out doc/math.tex
+        #if: contains(on.push.paths, 'docs/math.tex')
+        run: sudo apt-get install texlive texlive-latex-extra
+        run: pdflatex -output-directory=out doc/math.tex
 
       - name: deploy to pages
         uses: crazy-max/ghaction-github-pages@v2
