@@ -1,0 +1,18 @@
+on:
+  release:
+    types: [created]
+jobs:
+  deploy-to-pypi:
+    runs-on: ubuntu-latest
+    env:
+      TWINE_USERNAME: pavelkomarov
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - run: |
+        pip install setuptools wheel twine
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
