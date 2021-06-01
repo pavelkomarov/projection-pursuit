@@ -95,8 +95,6 @@ html_theme_options = {
 	'github_button': True,
 	'github_user': 'pavelkomarov',
 	'github_repo': 'projection-pursuit',
-	'travis_button': True,
-	'codecov_button': True,
 	'page_width': '3000px'
 }
 

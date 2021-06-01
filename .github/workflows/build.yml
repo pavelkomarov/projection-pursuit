@@ -11,7 +11,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: test python
+      - name: tests and coverage
         run: |
           pip install numpy matplotlib scipy scikit-learn pytest coveralls
           coverage run --source=skpp -m pytest -s
@@ -23,10 +23,12 @@ jobs:
           sphinx-build doc out
 
       - name: LaTeX stuff
-        #if: contains(on.push.paths, 'docs/math.tex')
-        run: |
-          sudo apt-get install texlive texlive-latex-extra
-          pdflatex -output-directory=out doc/math.tex
+        uses: tj-actions/changed-files@v6.3
+        run: echo steps.changed-files.outputs.modified_files
+        #if: contains(steps.changed-files.outputs.modified_files, 'docs/math.tex')
+        #run: |
+        #  sudo apt-get install texlive texlive-latex-extra
+        #  pdflatex -output-directory=out doc/math.tex
 
       - name: deploy to pages
         uses: crazy-max/ghaction-github-pages@v2
