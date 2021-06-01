@@ -2,6 +2,8 @@ on: push
 jobs:
   do-the-thing:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -30,8 +32,6 @@ jobs:
         with:
           target_branch: gh-pages
           build_dir: out
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #      - name: deploy to pypi
 #        if: on.tag
