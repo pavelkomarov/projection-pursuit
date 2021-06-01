@@ -29,6 +29,7 @@ jobs:
         run: |
           for file in "${{ steps.changed-files.outputs.all_modified_files }}"; do
             echo "$file was modified"
+          done
         #if: contains(steps.changed-files.outputs.modified_files, 'docs/math.tex')
         #run: |
         #  sudo apt-get install texlive texlive-latex-extra
