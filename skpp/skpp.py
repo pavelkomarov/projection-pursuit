@@ -140,9 +140,9 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			of :math:`X` through :math:`\\alpha_j`.
 		
 		"""
-		check_is_fitted(self, '_alpha')
+		check_is_fitted(self, '_alpha_')
 		X = check_array(X)
-		return numpy.dot(X, self._alpha)
+		return numpy.dot(X, self._alpha_)
 
 	def predict(self, X):
 		"""Use the fitted estimator to make predictions on new data.
@@ -164,7 +164,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		# outer product with the corresponding output weights of shape (d,); and
 		# take the weighted sum over all terms. This is a vectorized version of
 		# the evaluation function. 
-		Y = sum([numpy.outer(self._f[j](P[:, j]), self._beta[:, j])
+		Y = sum([numpy.outer(self._f_[j](P[:, j]), self._beta_[:, j])
 			for j in range(self.r)])
 		# return single-dimensional output if Y has only one column
 		return Y if Y.shape[1] != 1 else Y[:,0]
@@ -187,10 +187,11 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		"""
 		# some stuff to make this jazz pass sklearn's check_estimator()
 		X, Y = check_X_y(X, Y, multi_output=True)
-		if Y.ndim == 2 and Y.shape[1] == 1:
-			Y = column_or_1d(Y, warn=True)
+		if Y.ndim == 2 and Y.shape[1] == 1: # warning the user should pass 1D
+			Y = column_or_1d(Y, warn=True)  # necessary to pass sklearn checks
 		if Y.ndim == 1: # standardize Y as 2D so the below always works
 			Y = Y.reshape((-1,1)) # reshape returns a view to existing data
+		self.n_features_in_ = X.shape[1]
 
 		self._random = check_random_state(self.random_state)
 
@@ -232,10 +233,10 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 
 		# Now that input and output dimensions are known, parameters vectors
 		# can be initialized. Vectors are always stored vertically.
-		self._alpha = self._random.randn(X.shape[1], self.r) # p x r
-		self._beta = self._random.randn(Y.shape[1], self.r) # d x r
-		self._f = [lambda x: x*0 for j in range(self.r)] # zero functions
-		self._df = [None for j in range(self.r)] # no derivatives yet
+		self._alpha_ = self._random.randn(X.shape[1], self.r) # p x r
+		self._beta_ = self._random.randn(Y.shape[1], self.r) # d x r
+		self._f_ = [lambda x: x*0 for j in range(self.r)] # zero functions
+		self._df_ = [None for j in range(self.r)] # no derivatives yet
 
 		for j in range(self.r): # for each term in the additive model
 			self._fit_stage(X, Y, j, True)
@@ -270,7 +271,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 		# in to the contribution of this term vs all the others and then
 		# algebraically solved for this term's contribution by subtracting the
 		# rest of the sum from both sides.
-		R_j = Y - sum([numpy.outer(self._f[t](P[:, t]), self._beta[:, t].T) for t 
+		R_j = Y - sum([numpy.outer(self._f_[t](P[:, t]), self._beta_[:, t].T) for t 
 			in range(self.r) if t is not j]) # the n x d residuals matrix
 
 		# main alternating optimization loop
@@ -289,45 +290,45 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			# others remain constant, see math.pdf section 3.
 			
 			# find the f_j
-			beta_j_w = self._out_dim_weights*self._beta[:, j] # weighted beta
+			beta_j_w = self._out_dim_weights*self._beta_[:, j] # weighted beta
 			targets = numpy.dot(R_j, beta_j_w) / (
-					  numpy.inner(self._beta[:, j], beta_j_w) + 1e-9)
+					  numpy.inner(self._beta_[:, j], beta_j_w) + 1e-9)
 			# Fit the targets against projections.
-			self._f[j], self._df[j] = self._fit_2d(p_j, targets, j, itr)
+			self._f_[j], self._df_[j] = self._fit_2d(p_j, targets, j, itr)
 			
 			# find beta_j
-			f = self._f[j](p_j) # Find the n x 1 vector of function outputs.
+			f = self._f_[j](p_j) # Find the n x 1 vector of function outputs.
 			f_w = self._example_weights*f # f weighted by examples
-			self._beta[:, j] = numpy.dot(R_j.T, f_w) / (numpy.inner(f, f_w) + 1e-9)
+			self._beta_[:, j] = numpy.dot(R_j.T, f_w) / (numpy.inner(f, f_w) + 1e-9)
 
 			# find alpha_j
 			if fit_weights:
 				# Find the part of the Jacobians that is common to all
-				J = -(self._df[j](p_j)*numpy.sqrt(self._example_weights)*X.T).T
+				J = -(self._df_[j](p_j)*numpy.sqrt(self._example_weights)*X.T).T
 				JTJ = numpy.dot(J.T, J)
-				A = sum([self._out_dim_weights[k] * (self._beta[k, j]**2) * JTJ
+				A = sum([self._out_dim_weights[k] * (self._beta_[k, j]**2) * JTJ
 					for k in range(Y.shape[1])])
 				# Collect all g_jk vectors in to a convenient matrix G_j
-				G_j = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
-				b = -sum([self._out_dim_weights[k] * self._beta[k, j] *
+				G_j = R_j - numpy.outer(self._f_[j](p_j), self._beta_[:, j].T)
+				b = -sum([self._out_dim_weights[k] * self._beta_[k, j] *
 					numpy.dot(J.T, G_j[:, k]) for k in range(Y.shape[1])])
 
 				delta = numpy.linalg.lstsq(A.astype(numpy.float64, copy=False),
 					b.astype(numpy.float64, copy=False), rcond=-1)[0]
 				# TODO implement halving step if the loss doesn't decrease with
 				# this update.
-				alpha = self._alpha[:, j] + delta
+				alpha = self._alpha_[:, j] + delta
 				# normalize to avoid numerical drift
-				self._alpha[:, j] = alpha/numpy.linalg.norm(alpha)
+				self._alpha_[:, j] = alpha/numpy.linalg.norm(alpha)
 
 			# Recalculate the jth projection with new f_j and alpha_j
-			p_j = numpy.dot(X, self._alpha[:, j])
+			p_j = numpy.dot(X, self._alpha_[:, j])
 			
 			# Calculate mean squared error for this iteration
 			prev_loss = loss
 			# Subtract updated contribution of the jth term to get the
 			# difference between Y and the predictions. 
-			diff = R_j - numpy.outer(self._f[j](p_j), self._beta[:, j].T)
+			diff = R_j - numpy.outer(self._f_[j](p_j), self._beta_[:, j].T)
 			# square the difference, multiply rows by example weights, multiply
 			# columns by their weights, and sum to get the final loss
 			loss = numpy.dot(numpy.dot(self._example_weights, diff**2),
@@ -432,6 +433,7 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		class c. If unspecified, all penalties are considered to have the same
 		importance.
 		
+
 	See Also
 	--------
 	ProjectionPursuitRegressor : for definitions of other parameters
@@ -486,11 +488,14 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		X, Y = check_X_y(X, Y)
 		if Y.ndim == 1:
 			Y = Y.reshape(-1, 1) # Need 2D Y for encoding purposes
+		self.n_features_in_ = X.shape[1]
 
-		if self.example_weights is not 'uniform' and \
-			self.example_weights.shape[0] != Y.shape[0]:
-			raise ValueError('If weighting examples, then n_examples needs ' + \
-				'to match the length of example_weights from construction.')
+		if not (isinstance(self.example_weights, str) and \
+			self.example_weights == 'uniform' or \
+			isinstance(self.example_weights, numpy.ndarray) and \
+			self.example_weights.shape[0] == Y.shape[0]):
+			raise ValueError('Examples can only be weighted as `uniform` or ' + \
+				'given numerical weights where len(example_weights)==n_examples.')
 
 		# classes_ property is required for sklearn classifiers. unique_labels
 		self.classes_ = unique_labels(Y) # also performs some input validation.
@@ -501,12 +506,12 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		H = self._encoder.fit_transform(Y)
 
 		# Calculate the weights. See section 4 of math.pdf.
-		if self.example_weights is not 'uniform':
+		if isinstance(self.example_weights, str) and self.example_weights == 'uniform':
+			w_ex = numpy.ones(H.shape[1])
+		else:
 			pi_c = numpy.sum(H, axis=0) # pi_c * n, technically, for all c
 			s_c = numpy.dot(self.example_weights, H) # find s_c for all c
 			w_ex = s_c / (pi_c + 1e-9) # column weights due to example weights
-		else:
-			w_ex = numpy.ones(H.shape[1])
 
 		if self.pairwise_loss_matrix is not None:
 			w_pl = numpy.sum(self.pairwise_loss_matrix, axis=1) # sum over k
@@ -514,13 +519,13 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			w_pl = numpy.ones(H.shape[1])
 
 		# The problem is reduced to regression
-		self._ppr = ProjectionPursuitRegressor(self.r, self.fit_type,
+		self._ppr_ = ProjectionPursuitRegressor(self.r, self.fit_type,
 			self.degree, self.opt_level, self.example_weights, w_ex*w_pl,
 			self.eps_stage, self.eps_backfit, self.stage_maxiter,
 			self.backfit_maxiter, self.random_state, self.show_plots,
 			self.plot_epoch)
 
-		self._ppr.fit(X, H)
+		self._ppr_.fit(X, H)
 		return self
 
 	def predict(self, X):
@@ -538,8 +543,8 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 			the argmax of the output, and mapping it back to a class.
 		
 		"""
-		check_is_fitted(self, '_ppr')
-		H = self._ppr.predict(X)
+		check_is_fitted(self, '_ppr_')
+		H = self._ppr_.predict(X)
 
 		if H.ndim == 1: # OneHotEncoder needs 2D
 			H = H.reshape(-1, 1)
@@ -551,4 +556,4 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		if H.shape[1] == 1: # because sklearn's tests want a 1D output given
 			return H.ravel()		# a 1D input. Kind of pedantic.
 		return H
-
+ 
