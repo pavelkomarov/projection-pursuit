@@ -9,7 +9,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - uses: tj-actions/changed-files@v6.3
+      - uses: tj-actions/changed-files@v14.4
         id: changed-files
   
       - name: tests and coverage
