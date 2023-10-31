@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+projection_pursuit.egg-info/PKG-INFO
+projection_pursuit.egg-info/SOURCES.txt
+projection_pursuit.egg-info/dependency_links.txt
+projection_pursuit.egg-info/requires.txt
+projection_pursuit.egg-info/top_level.txt
+skpp/__init__.py
+skpp/skpp.py
