@@ -12,7 +12,7 @@ from ..skpp import ProjectionPursuitRegressor, ProjectionPursuitClassifier
 def test_regressor_passes_sklearn_checks():
 	estimator_checks.check_estimator(ProjectionPursuitRegressor())
 
-def test_classifier_passes_sklearn_checks():
+def test_classifier_passes_sklearn_checks(): # Note this one causes a warning in the single-class case
 	estimator_checks.check_estimator(ProjectionPursuitClassifier())
 
 def test_construction_errors():

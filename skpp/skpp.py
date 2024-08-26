@@ -193,7 +193,13 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			Y = Y.reshape((-1,1)) # reshape returns a view to existing data
 		self.n_features_in_ = X.shape[1]
 
-		self._random = check_random_state(self.random_state)
+		# Due to the enormous number of least squares fits happening here,
+		# numerical drift is unavoidable, so short-circuit for idempotence
+		idempotence_hash = hash((X.tobytes() if isinstance(X, numpy.ndarray)
+			else str(X), Y.tobytes() if isinstance(Y, numpy.ndarray) else str(Y)))
+		if hasattr(self, 'idempotence_hash_') and \
+			self.idempotence_hash_ == idempotence_hash: return self
+		self.idempotence_hash_ = idempotence_hash
 
 		# Sklearn does not allow mutation of object parameters (the ones not
 		# prepended by an underscore), so construct or reassign weights
@@ -231,8 +237,11 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 			else:
 				self._out_dim_weights = self.out_dim_weights
 
+		self._random = check_random_state(self.random_state)
+
 		# Now that input and output dimensions are known, parameters vectors
-		# can be initialized. Vectors are always stored vertically.
+		# can be initialized. Vectors are always stored vertically. Use the random
+		# state to initialize idempotently if a random state is set.
 		self._alpha_ = self._random.randn(X.shape[1], self.r) # p x r
 		self._beta_ = self._random.randn(Y.shape[1], self.r) # d x r
 		self._f_ = [lambda x: x*0 for j in range(self.r)] # zero functions
@@ -501,8 +510,8 @@ class ProjectionPursuitClassifier(BaseEstimator, ClassifierMixin):
 		self.classes_ = unique_labels(Y) # also performs some input validation.
 
 		# Encode the input Y as a multi-column H.
-		# sparse=False until numpy fixes crazy sparse matrix dot() behavior
-		self._encoder = OneHotEncoder(categories='auto', sparse=False)
+		# sparse_output=False until numpy fixes crazy sparse matrix dot() behavior
+		self._encoder = OneHotEncoder(categories='auto', sparse_output=False)
 		H = self._encoder.fit_transform(Y)
 
 		# Calculate the weights. See section 4 of math.pdf.
