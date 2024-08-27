@@ -9,3 +9,5 @@
 doctrees/
 html/
 .DS_Store
+dist/
+*.egg*
