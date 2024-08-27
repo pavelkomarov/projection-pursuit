@@ -1,0 +1,28 @@
+[project]
+name = "projection-pursuit"
+dynamic = ["version"]
+description = "Scikit-learn estimators based on projection pursuit"
+readme = "README.md"
+authors = [
+	{name = "Pavel Komarov", email = "pvlkmrv@gmail.com"}
+]
+dependencies = [
+	'pytest',
+	'numpy',
+	'scikit-learn',
+	'matplotlib'
+]
+license = {text = "BSD License"}
+
+[tool.spin]
+package = "skpp"
+
+[tool.setuptools.dynamic]
+version = {attr = "skpp.__version__"}
+
+[project.urls]
+Documentation = 'https://pavelkomarov.como/projection-pursuit'
+Repository = 'https://github.com/pavelkomarov/projection-pursuit'
+
+[build-system]
+requires = ["setuptools"]
