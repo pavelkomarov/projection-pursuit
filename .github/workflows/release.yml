@@ -13,6 +13,8 @@ jobs:
       with:
         python-version: '3.x'
     - run: |
+        echo TWINE_USERNAME
         pip install build wheel twine
         python -m build
         twine upload dist/*
+
