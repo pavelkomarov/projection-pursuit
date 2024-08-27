@@ -16,5 +16,5 @@ jobs:
         echo $TWINE_USERNAME
         pip install build wheel twine
         python -m build
-        twine upload dist/*
+        twine upload --verbose dist/*
 
