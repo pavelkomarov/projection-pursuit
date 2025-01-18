@@ -30,6 +30,7 @@ jobs:
         run: |
           sudo apt-get install texlive texlive-latex-extra
           pdflatex -output-directory=out doc/math.tex
+          rm out/math.aux out/math.log out/math.out # remove unneeded .tex compilation files
 
       - name: deploy to pages
         uses: peaceiris/actions-gh-pages@v4
