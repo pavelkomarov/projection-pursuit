@@ -73,7 +73,7 @@ In practice a single projection-mapping-expansion is not descriptive enough to c
 
 The (supervised) learning process consists of minimizing a standard quadratic cost, or ``loss", function:
 
-$$loss = \sum_{i=1}^n w_i (y_i - \hat{y_i})^2$$
+$$\text{loss} = \sum_{i=1}^n w_i (y_i - \hat{y_i})^2$$
 
 where:
 \begin{itemize}
@@ -95,7 +95,7 @@ Unfortunately, modifying the loss function in either of these ways means alterin
 
 Plugging the evaluation function in to the cost function yields a relationship between model parameters and loss. Because there are multiple dimensions in our vector $\vec{y_i}$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
 
-$$loss = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{j=1}^r f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{j=1}^r f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
 where this new fauna:
 \begin{itemize}
@@ -109,7 +109,7 @@ where this new fauna:
 
 This can be vectorized as
 
-$$loss = (\vec{w_I}^T \cdot (\pmb{Y} - \pmb{\hat{Y}})^2) \cdot \vec{w_K}$$
+$$\text{loss} = (\vec{w_I}^T \cdot (\pmb{Y} - \pmb{\hat{Y}})^2) \cdot \vec{w_K}$$
 
 where
 \begin{itemize}
@@ -145,7 +145,7 @@ But this leaves some details unexplained. How exactly is the residual found? How
 
 The residual trick cleverly separates the contribution of the $j$\textsuperscript{th} stage from the other terms in the additive model. Consider rephrasing the loss function as:
 
-$$loss = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes \beta_{tk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes \beta_{tk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
 Now if we let
 
@@ -153,7 +153,7 @@ $$r_{ijk} = y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes
 
 then
 
-$$loss,\ L = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss, } L = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
 In practice we will wish to find all $r_{ijk}$ for a particular $j$. Call this $\pmb{R}_j \in \mathbb{R}^{n \times d}$, the same space as the output. It can be found with
 
@@ -163,7 +163,7 @@ where $f_t(\pmb{X} \cdot \vec{\alpha_t})$ is actually an $n$-vector.
 
 \subsection{Optimizing $\vec{\beta_j}$ Given $\vec{\alpha_j}$ and $f_j$}
 
-$$loss\ for\ the\ jth\ term,\ L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss for the j}^{th}\text{ term, } L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
 
 To optimize with respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta_j}$ as the parameter of interest.
 
@@ -281,7 +281,7 @@ where
 
 The unknown here is that conditional probability. If we define an indicator variable
 
-$$h_{ci} = 1\ if\ y_i=c,\ 0\ otherwise$$
+$$h_{ci} = 1 \text{ if } y_i=c,\ 0 \text{ otherwise}$$
 
 then Friedman says we can rewrite the conditional probability as
 
@@ -306,7 +306,7 @@ Notice that if the weights $w_i$ in $s_c$ are uniform (so no example is consider
 
 Additionally, $l_{ck}$ is often simplified as
 
-$$l_{ck} = 1\ if\ c \neq k,\ 0\ if\ c=k$$
+$$l_{ck} = 1 \text{ if } c \neq k,\ 0 \text{ if } c=k$$
 
 So rewrite the risk as
 
@@ -354,9 +354,9 @@ $$\hat{y_i} = \argmax_c \hat{h_{ci}} $$
 
 That is: the predicted class is the index of the column where the largest value in the $i$\textsuperscript{th} row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
-And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But the $\max_k$ in the risk equation makes it nonconvex, which means we can no longer employ the methods detailed in section 3 to find model parameters.
+And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But Friedman says the $\max_k$ in the risk equation makes it nonconvex (although after reading some \href{https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf}{Boyd} I am not completely sure he's right), which means there may not be a great way to optimize it directly.
 
-Fortunately, Friedman assures us (and experiment bears out) that using the quatratic loss function is acceptable, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
+Fortunately, Friedman assures us (and experiment bears out) that using the quatratic loss function is an acceptable proxy, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
 
 $$w_c = \frac{s_c}{S \pi_c} \sum_{k \in [1,q]} l_{ck}$$
 
