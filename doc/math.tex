@@ -320,7 +320,7 @@ Or equivalently:
 
 $$R = \sum_{i=1}^n \max_{k \in [1,q]} E[h_{ci} | \vec{x_i}]$$
 
-because the sum is minimized by excluding the largest expectation.\newline
+because the sum is minimized by excluding the largest expectation, and the expectation across all classes sums to 1.\newline
 
 Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero, so $E[\vec{h_c} | \pmb{X}] = \vec{h_c}$, $h_{ci} \forall i$ stacked together.
 
