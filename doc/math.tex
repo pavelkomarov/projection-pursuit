@@ -298,7 +298,7 @@ where
 
 The coefficient can be expanded to
 
-$$\frac{\sum_{c=1}^q \sum_{i=1}^n w_i h_{ci} * \frac{\sum_{i=1}^n h_{ci}}{n}}{\sum_{i=1}^n w_i h_{ci}} \propto \frac{\sum_{i=1}^n h_{ci}}{\sum_{i=1}^n w_i h_{ci}}$$
+$$\frac{\sum_{c=1}^q \sum_{i=1}^n w_i h_{ci} \cdot \frac{\sum_{i=1}^n h_{ci}}{n}}{\sum_{i=1}^n w_i h_{ci}} \propto \frac{\sum_{i=1}^n h_{ci}}{\sum_{i=1}^n w_i h_{ci}}$$
 
 This doesn't make any sense, because it says probabilities are \textit{inversely} related to example weights, but we really want the probability of predicting a given class to be \textit{directly} related to the importances of examples in that class. Convinced Friedman accidentally inverted the equation, the code and the following equations reinvert his inversion.
 
@@ -324,7 +324,7 @@ because the sum is minimized by excluding the largest expectation, and the expec
 
 Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero, so $E[\vec{h_c} | \pmb{X}] = \vec{h_c}$, $h_{ci} \forall i$ stacked together.
 
-Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$. That is:
+Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$:
 
 \[
 \pmb{Y} =
@@ -354,7 +354,7 @@ $$\hat{y_i} = \argmax_c \hat{h_{ci}} $$
 
 That is: the predicted class is the index of the column where the largest value in the $i$\textsuperscript{th} row of $\hat{\pmb{H}}$, the predicted $\pmb{H}$, is located. If $\pmb{Y}$ is filled with generalized categories rather than numbers, then categoricals can be assigned numbers for the construction of $\pmb{H}$, and argmaxes can be translated back at prediction-time.
 
-And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But Friedman says the risk equation is nonconvex, so there is not a good way to optimize it directly (although, after reading some \href{https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf}{Boyd} and learning about \href{https://arxiv.org/pdf/2006.05103}{input-output convex neural nets}, I am \href{https://math.stackexchange.com/questions/5047615/is-this-empirical-risk-minimization-function-really-non-convex}{not completely sure this need always be the case}).
+And just like that we have reduced univariate classification to multivariate regression! There is one caveat: Training the model to make these predictions should ideally involve optimizing the the misclassification risk as the loss function, not the sum-of-squares loss function from section 2 as is done for actual regression. But Friedman says the risk equation is nonconvex, so there is not a good way to optimize it directly (although, after reading some \href{https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf}{Boyd} and learning about \href{https://stats.stackexchange.com/a/662866/140965}{input-convex neural nets}, I am \href{https://math.stackexchange.com/questions/5047615/is-this-empirical-risk-minimization-function-really-non-convex}{not completely sure this need always be the case}).
 
 Fortunately, Friedman assures us (and experiment bears out) that using the quadratic loss function is an acceptable proxy, and if we wish to account for examples being of differing importances or specify a funky non-uniform pairwise loss scheme, all we have to do is use weights:
 
