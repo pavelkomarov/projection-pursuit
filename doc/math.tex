@@ -318,7 +318,7 @@ $$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[h_{ci} | \vec{x_i}]$$
 
 Or equivalently:
 
-$$R = \sum_{i=1}^n \max_{k \in [1,q]} E[h_{ci} | \vec{x_i}]$$
+$$R = \sum_{i=1}^n (1 - \max_{k \in [1,q]} E[h_{ci} | \vec{x_i}])$$
 
 because the sum is minimized by excluding the largest expectation, and the expectation across all classes sums to 1.
 
