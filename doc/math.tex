@@ -248,7 +248,7 @@ $$\left[ \sum_{k=1}^d J_{jk}^T J_{jk} \right] \vec{\delta} = -\sum_{k=1}^d J_{jk
 
 On the left side is a $p \times p$ matrix, and on the right a $p \times 1$ vector, so we have an easy-to-solve linear inverse problem.
 
-$$\vec{\alpha}_j += \vec{\delta}$$
+$$\vec{\alpha}_j\ +\!= \vec{\delta}$$
 
 In practice $\vec{\alpha}_j$ is renormalized after this update to avoid numerical drift and keep it from blowing up. Because $\vec{\alpha}_j$ is a projection vector only meant to flatten the data along some dimension, its magnitude does not really matter.
 

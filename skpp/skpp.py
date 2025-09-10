@@ -319,7 +319,8 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 					for k in range(Y.shape[1])])
 				# Collect all g_jk vectors in to a convenient matrix G_j
 				G_j = R_j - numpy.outer(self._f_[j](p_j), self._beta_[:, j].T)
-				b = -sum([numpy.sqrt(self._out_dim_weights[k]) * self._beta_[k, j] *
+				# half-power output weights from J and g multiply to power 1
+				b = -sum([self._out_dim_weights[k] * self._beta_[k, j] *
 					numpy.dot(J.T, G_j[:, k]) for k in range(Y.shape[1])])
 
 				delta = numpy.linalg.lstsq(A.astype(numpy.float64, copy=False),
