@@ -33,7 +33,7 @@ I attempt to follow a structure based on the \href{https://www.youtube.com/watch
 
 PPR is a statistical model of the form:
 
-$$\vec{y_i} = \sum_{j=1}^{r} f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
+$$\vec{y}_i = \sum_{j=1}^{r} f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \vec{\beta}_j^T$$
 
 where:
 \begin{itemize}
@@ -41,18 +41,18 @@ where:
 	\item $i$ iterates examples, the rows of input and output matrices
 	\item $j$ iterates the number of terms in the PPR ``additive model"
 	\item $r$ is the total number of projections and functions (terms) in the PPR
-	\item $\vec{y_i}$ is a $d$-dimensional vector, the $i$\textsuperscript{th} row in an output matrix $\pmb{Y} \in \mathbb{R}^{n \times d}$
-	\item $\vec{x_i}$ is a $p$-dimensional vector, the $i$\textsuperscript{th} row of an input matrix $\pmb{X} \in \mathbb{R}^{n \times p}$
-	\item $\vec{\alpha_j}$ is the $j$\textsuperscript{th} projection vector in the mdoel, a $p$-dimensional vector inner-producted with $\vec{x_i}$
+	\item $\vec{y}_i$ is a $d$-dimensional vector, the $i$\textsuperscript{th} row in an output matrix $\pmb{Y} \in \mathbb{R}^{n \times d}$
+	\item $\vec{x}_i$ is a $p$-dimensional vector, the $i$\textsuperscript{th} row of an input matrix $\pmb{X} \in \mathbb{R}^{n \times p}$
+	\item $\vec{\alpha}_j$ is the $j$\textsuperscript{th} projection vector in the mdoel, a $p$-dimensional vector inner-producted with $\vec{x}_i$
 	\item $f_j$ is the $j$\textsuperscript{th} function in the model, mapping from $\mathbb{R}^1 \rightarrow \mathbb{R}^1$
-	\item $\vec{\beta_j}^T$ is the transpose of $\vec{\beta_j}$, a $d$-dimensional vector outer-producted with the result of $f_j$ to yield a result in the output space
+	\item $\vec{\beta}_j^T$ is the transpose of $\vec{\beta}_j$, a $d$-dimensional vector outer-producted with the result of $f_j$ to yield a result in the output space
 	\item $\cdot$ is an inner product
 	\item $\otimes$ is an outer product
 \end{itemize}
 
 This can be ``vectorized" as
 
-$$\pmb{\hat{Y}} = \sum_{j=1}^r f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
+$$\pmb{\hat{Y}} = \sum_{j=1}^r f_j(\pmb{X} \cdot \vec{\alpha}_j) \otimes \vec{\beta}_j^T$$
 
 where the ``hat" \string^ distinguishes the answers predicted, as opposed to known training answers.\newline
 
@@ -93,9 +93,9 @@ There are other choices of loss function, including an absolute value loss with 
 
 Unfortunately, modifying the loss function in either of these ways means altering the optimization process, and that's a mathematical bear I just haven't chosen to wrestle with.\newline
 
-Plugging the evaluation function in to the cost function yields a relationship between model parameters and loss. Because there are multiple dimensions in our vector $\vec{y_i}$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
+Plugging the evaluation function in to the cost function yields a relationship between model parameters and loss. Because there are multiple dimensions in our vector $\vec{y}_i$, we introduce a sum over them so the PPR is motivated to make good predictions for all entries of the output:
 
-$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{j=1}^r f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{j=1}^r f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \beta_{jk}]^2$$
 
 where this new fauna:
 \begin{itemize}
@@ -103,37 +103,37 @@ where this new fauna:
 	\item $k$ iterates the columns of the output $\pmb{Y}$
 	\item $d$ is the number of outputs, the width of the output matrix $\pmb{Y}$
 	\item $w_k$ is a scalar weight, the relative importance of the $k$\textsuperscript{th} output dimension
-	\item $y_{ik}$ is the scalar $k$\textsuperscript{th} entry in the vector $\vec{y_i}$, itself the $i$\textsuperscript{th} row of $\pmb{Y}$
-	\item $\beta_{jk}$ is the scalar $k$\textsuperscript{th} entry of $\vec{\beta_j}$ from the evaluation function
+	\item $y_{ik}$ is the scalar $k$\textsuperscript{th} entry in the vector $\vec{y}_i$, itself the $i$\textsuperscript{th} row of $\pmb{Y}$
+	\item $\beta_{jk}$ is the scalar $k$\textsuperscript{th} entry of $\vec{\beta}_j$ from the evaluation function
 \end{itemize}
 
 This can be vectorized as
 
-$$\text{loss} = (\vec{w_I}^T \cdot (\pmb{Y} - \pmb{\hat{Y}})^2) \cdot \vec{w_K}$$
+$$\text{loss} = (\vec{w}_I^T \cdot (\pmb{Y} - \pmb{\hat{Y}})^2) \cdot \vec{w}_K$$
 
 where
 \begin{itemize}
 	\setlength\itemsep{-2mm}
-	\item $\vec{w_I}$ is an $n$-vector containing all example weights, $w_i$
-	\item $\vec{w_K}$ is a $d$-vector containing all output dimension weights, $w_k$
+	\item $\vec{w}_I$ is an $n$-vector containing all example weights, $w_i$
+	\item $\vec{w}_K$ is a $d$-vector containing all output dimension weights, $w_k$
 \end{itemize}
 and the sums disappear inside the inner products.\newline
 
-The parameters we need to optimize to make the PPR ``learn" are $\vec{\alpha_j}$, $f_j$, and $\vec{\beta_j}$. $w_k$ are hyperparameters chosen by the user, just as $r$ is chosen. If output dimensions are on differing scales and the user wishes for the loss to be relative to those scales, then choosing $w_k$ inversely proportional to the variance of outputs causes the loss to treat outputs more evenly. If some output dimensions are more important than others, then setting their weights higher causes predictions in those dimensions to be closer.
+The parameters we need to optimize to make the PPR ``learn" are $\vec{\alpha}_j$, $f_j$, and $\vec{\beta}_j$. $w_k$ are hyperparameters chosen by the user, just as $r$ is chosen. If output dimensions are on differing scales and the user wishes for the loss to be relative to those scales, then choosing $w_k$ inversely proportional to the variance of outputs causes the loss to treat outputs more evenly. If some output dimensions are more important than others, then setting their weights higher causes predictions in those dimensions to be closer.
 
 \section{The Optimization Scheme}
 
 The macroscopic optimization scheme to solve for so many different parameters is non-obvious but straightforward:
 \begin{enumerate}
 	\setlength\itemsep{-2mm}
-	\item Initialize all $\vec{\alpha_j}$, $f_j$ and $\vec{\beta_j}$ to something random. Let $j=1$. 
+	\item Initialize all $\vec{\alpha}_j$, $f_j$ and $\vec{\beta}_j$ to something random. Let $j=1$. 
 	\item Find the ``residual" variance unexplained by all stages fit so far.
-	\item Project the input in to single dimension: $\pmb{X} \cdot \vec{\alpha_j}$.
+	\item Project the input in to single dimension: $\pmb{X} \cdot \vec{\alpha}_j$.
 	\item Fit $f_j$ to a weighted residual target versus projections.
-	\item Use this $f_j$ to find a better setting for $\vec{\beta_j}$.
-	\item Use a Gauss-Newton scheme to solve for an update to $\vec{\alpha_j}$.
-	\item Repeat steps 3-6 until $f_j$, $\vec{\beta_j}$, and $\vec{\alpha_j}$ converge.
-	\item (optional) Use the newly converged parameters to retune all previous $f_t$, $\vec{\beta_t}$, $\vec{\alpha_t}$ where $t \leq j$. (backfitting)
+	\item Use this $f_j$ to find a better setting for $\vec{\beta}_j$.
+	\item Use a Gauss-Newton scheme to solve for an update to $\vec{\alpha}_j$.
+	\item Repeat steps 3-6 until $f_j$, $\vec{\beta}_j$, and $\vec{\alpha}_j$ converge.
+	\item (optional) Use the newly converged parameters to retune all previous $f_t$, $\vec{\beta}_t$, $\vec{\alpha}_t$ where $t \leq j$. (backfitting)
 	\item Increment $j$ and go back to step 2 until $j$ reaches $r$.
 \end{enumerate}
 
@@ -145,45 +145,45 @@ But this leaves some details unexplained. How exactly is the residual found? How
 
 The residual trick cleverly separates the contribution of the $j$\textsuperscript{th} stage from the other terms in the additive model. Consider rephrasing the loss function as:
 
-$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes \beta_{tk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss} = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [y_{ik} - \sum_{t \neq j} f_t(\vec{x}_i \cdot \vec{\alpha}_t) \otimes \beta_{tk} - f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \beta_{jk}]^2$$
 
 Now if we let
 
-$$r_{ijk} = y_{ik} - \sum_{t \neq j} f_t(\vec{x_i} \cdot \vec{\alpha_t}) \otimes \beta_{tk}$$
+$$r_{ijk} = y_{ik} - \sum_{t \neq j} f_t(\vec{x}_i \cdot \vec{\alpha}_t) \otimes \beta_{tk}$$
 
 then
 
-$$\text{loss, } L = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss, } L = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \beta_{jk}]^2$$
 
 In practice we will wish to find all $r_{ijk}$ for a particular $j$. Call this $\pmb{R}_j \in \mathbb{R}^{n \times d}$, the same space as the output. It can be found with
 
-$$\pmb{R}_j = \pmb{Y} - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha_t}) \otimes \vec{\beta_t}$$
+$$\pmb{R}_j = \pmb{Y} - \sum_{t \neq j} f_t(\pmb{X} \cdot \vec{\alpha}_t) \otimes \vec{\beta}_t$$
 
-where $f_t(\pmb{X} \cdot \vec{\alpha_t})$ is actually an $n$-vector.
+where $f_t(\pmb{X} \cdot \vec{\alpha}_t)$ is actually an $n$-vector.
 
-\subsection{Optimizing $\vec{\beta_j}$ Given $\vec{\alpha_j}$ and $f_j$}
+\subsection{Optimizing $\vec{\beta}_j$ Given $\vec{\alpha}_j$ and $f_j$}
 
-$$\text{loss for the j}^{th}\text{ term, } L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk}]^2$$
+$$\text{loss for the j}^{th}\text{ term, } L_j = \sum_{i=1}^n w_i \sum_{k=1}^d w_k [r_{ijk} - f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \beta_{jk}]^2$$
 
-To optimize with respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta_j}$ as the parameter of interest.
+To optimize with respect to a parameter, use good ol' calculus: Take a derivative, set equal to zero, and solve. Let's select $\beta_{jk'}$, the $(k=k')$\textsuperscript{th} entry of $\vec{\beta}_j$ as the parameter of interest.
 
-$$\frac{\partial L_j}{\partial \beta_{jk'}} = \sum_{i=1}^n w_i w_{k'} [2(r_{ijk'} - f_j(\vec{x_i} \cdot \vec{\alpha_j}) \otimes \beta_{jk'})(-f_j(\vec{x_i} \cdot \vec{\alpha_j}))] = 0$$
+$$\frac{\partial L_j}{\partial \beta_{jk'}} = \sum_{i=1}^n w_i w_{k'} [2(r_{ijk'} - f_j(\vec{x}_i \cdot \vec{\alpha}_j) \otimes \beta_{jk'})(-f_j(\vec{x}_i \cdot \vec{\alpha}_j))] = 0$$
 
 Notice that the sum over $k$ disappears because no term where $k \neq k'$ will contain our variable $\beta_{jk'}$, so for the purposes of differentiation they are constant, and the derivative of constants is zero. Only the weight $w_{k'}$ remains.
 
 Also, I've been using $\otimes$ for consistency, but since $\beta_{jk'}$ is scalar, an outer product is nothing special, just an ordinary multiplication. So we can do some algebra:
 
-$$ -2 w_{k'} \sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})] + 2 w_{k'} \beta_{jk'} \sum_{i=1}^n w_i [f_j^2(\vec{x_i} \cdot \vec{\alpha_j})] = 0 $$
+$$ -2 w_{k'} \sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x}_i \cdot \vec{\alpha}_j)] + 2 w_{k'} \beta_{jk'} \sum_{i=1}^n w_i [f_j^2(\vec{x}_i \cdot \vec{\alpha}_j)] = 0 $$
 
-$$\rightarrow \beta_{jk'} = \frac{\sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x_i} \cdot \vec{\alpha_j})]}{\sum_{i=1}^n w_i [f_j^2(\vec{x_i} \cdot \vec{\alpha_j})]}$$
+$$\rightarrow \beta_{jk'} = \frac{\sum_{i=1}^n w_i [r_{ijk'} f_j(\vec{x}_i \cdot \vec{\alpha}_j)]}{\sum_{i=1}^n w_i [f_j^2(\vec{x}_i \cdot \vec{\alpha}_j)]}$$
 
-This can be vectorized to find all entries of $\vec{\beta_j}$ at once:
+This can be vectorized to find all entries of $\vec{\beta}_j$ at once:
 
-$$ \vec{\beta_j} = \frac{\pmb{R}_j^T \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w_I} \odot f_j(\pmb{X} \cdot \alpha_j))}$$
+$$ \vec{\beta}_j = \frac{\pmb{R}_j^T \cdot (\vec{w}_I \odot f_j(\pmb{X} \cdot \alpha_j))}{f_j(\pmb{X} \cdot \alpha_j) \cdot (\vec{w}_I \odot f_j(\pmb{X} \cdot \alpha_j))}$$
 
-where $\odot$ is a Hadamard product, $\vec{w_I}$ is an $n$-vector, $\pmb{R}_j$ is the residuals, and the dot products are taken along the length-$n$ dimensions of these objects.
+where $\odot$ is a Hadamard product, $\vec{w}_I$ is an $n$-vector, $\pmb{R}_j$ is the residuals, and the dot products are taken along the length-$n$ dimensions of these objects.
 
-\subsection{Optimizing $f_j$ Given $\vec{\alpha_j}$ and $\vec{\beta_j}$}
+\subsection{Optimizing $f_j$ Given $\vec{\alpha}_j$ and $\vec{\beta}_j$}
 
 Now a similar argument, but this time consider the parameter of interest to be $f_{i'j}$, the $(i=i')$\textsuperscript{th} entry of the $n$-vector formed by taking the inner product of $\pmb{X}$ with $\alpha_j$ and applying $f_j$ to each entry.
 
@@ -198,59 +198,59 @@ $$\rightarrow 2 f_{i'j} \sum_{k=1}^d w_k \beta_{jk}^2 = 2 \sum_{k=1}^d w_k r_{i'
 
 $$\rightarrow f_{i'j} = \frac{\sum_{k=1}^d w_k r_{i'jk} \beta_{jk}}{\sum_{k=1}^d w_k \beta_{jk}^2}$$
 
-As in the case of $\vec{\beta_j}$, this can be vectorized.
+As in the case of $\vec{\beta}_j$, this can be vectorized.
 
-$$ f_j(\pmb{X} \cdot \vec{\alpha_j}) = \frac{\pmb{R}_j \cdot (\vec{w_K} \odot \vec{\beta_j})}{\vec{\beta_j} \cdot (\vec{w_K} \odot \vec{\beta_j})}$$
+$$ f_j(\pmb{X} \cdot \vec{\alpha}_j) = \frac{\pmb{R}_j \cdot (\vec{w}_K \odot \vec{\beta}_j)}{\vec{\beta}_j \cdot (\vec{w}_K \odot \vec{\beta}_j)}$$
 
 This provides targets for the funtion $f_j$. The task is to find the function that maps from this input to this output, for which there are numerous solvers (finding a polynomial by reducing to a linear inverse problem, for example). The example weights $w_i$ disappear in the algebra and so do not affect the targets, but they can be passed on to the function-fitter so it considers some examples more important than others.
 
-\subsection{Optimizing $\vec{\alpha_j}$ Given $\vec{\beta_j}$ and $f_j$}
+\subsection{Optimizing $\vec{\alpha}_j$ Given $\vec{\beta}_j$ and $f_j$}
 
 This is by far the toughest set of parameters to optimize, because they are nested inside the function. This time express the loss as:
 
-$$L_j = \sum_{k=1}^d w_k [\vec{w_I} \odot \vec{g_{jk}}^2]$$
+$$L_j = \sum_{k=1}^d w_k [\vec{w}_I \odot \vec{g}_{jk}^2]$$
 
 where
 
-$$ \vec{g_{jk}} = \vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk}$$
+$$ \vec{g}_{jk} = \vec{r}_{jk} - f_j(\pmb{X} \cdot \vec{\alpha}_j) \otimes \beta_{jk}$$
 
-where $\vec{r_{jk}}$ is the $n$-vector formed by stacking $r_{ijk} \forall i$ together, or equivalently the $k$\textsuperscript{th} column of $\pmb{R}_j$.
+where $\vec{r}_{jk}$ is the $n$-vector formed by stacking $r_{ijk} \forall i$ together, or equivalently the $k$\textsuperscript{th} column of $\pmb{R}_j$.
 
 The weights can be factored in to the square to yield a form solveable with \href{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm#Description}{Gauss-Newton}.
 
-$$L_j = \sum_{k=1}^d \vec{g_{jkw}}(\vec{\alpha_j})^2,$$
+$$L_j = \sum_{k=1}^d \vec{g}_{jkw}(\vec{\alpha}_j)^2,$$
 
-$$\vec{g_{jkw}} = \sqrt{w_k} \sqrt{\vec{w_I}} \odot (\vec{r_{jk}} - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \beta_{jk})$$
+$$\vec{g}_{jkw} = \sqrt{w_k} \sqrt{\vec{w}_I} \odot (\vec{r}_{jk} - f_j(\pmb{X} \cdot \vec{\alpha}_j) \otimes \beta_{jk})$$
 
 Find the Jacobian:
 
-$$J_{jk}[u,v] = \frac{\partial \vec{g_{jkw}}(\vec{\alpha_j})[u]}{\partial \vec{\alpha_j}[v]} = -\sqrt{w_k} \sqrt{w_u} \dot{f_j}(\vec{x_u} \cdot \vec{\alpha_j}) \beta_{jk} x_{uv}$$
+$$J_{jk}[u,v] = \frac{\partial \vec{g}_{jkw}(\vec{\alpha}_j)[u]}{\partial \vec{\alpha}_j[v]} = -\sqrt{w_k} \sqrt{w_u} \dot{f_j}(\vec{x}_u \cdot \vec{\alpha}_j) \beta_{jk} x_{uv}$$
 
-where $w_u$ is $\vec{w_I}[u]$, the $u$\textsuperscript{th} example weight, as distinct from $w_k$, which, remember, are output dimension weights.
+where $w_u$ is $\vec{w}_I[u]$, the $u$\textsuperscript{th} example weight, as distinct from $w_k$, which, remember, are output dimension weights.
 
 \[
 \rightarrow J_{jk} = -\sqrt{w_k} \beta_{jk}
 \begin{bmatrix}
-	\sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{00} & \sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{01} & \dots & \sqrt{w_0} \dot{f_j}(\vec{x_0} \cdot \vec{\alpha_j}) x_{0p} \\
-    \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{10} & \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{11} & \dots & \sqrt{w_1} \dot{f_j}(\vec{x_1} \cdot \vec{\alpha_j}) x_{1p}\\
+	\sqrt{w_0} \dot{f_j}(\vec{x}_0 \cdot \vec{\alpha}_j) x_{00} & \sqrt{w_0} \dot{f_j}(\vec{x}_0 \cdot \vec{\alpha}_j) x_{01} & \dots & \sqrt{w_0} \dot{f_j}(\vec{x}_0 \cdot \vec{\alpha}_j) x_{0p} \\
+    \sqrt{w_1} \dot{f_j}(\vec{x}_1 \cdot \vec{\alpha}_j) x_{10} & \sqrt{w_1} \dot{f_j}(\vec{x}_1 \cdot \vec{\alpha}_j) x_{11} & \dots & \sqrt{w_1} \dot{f_j}(\vec{x}_1 \cdot \vec{\alpha}_j) x_{1p}\\
     \vdots & & \ddots & \vdots\\
-    \sqrt{w_n} \dot{f_j}(\vec{x_n} \cdot \vec{\alpha_j}) x_{n0} & \hdots & \hdots & \sqrt{w_n} \dot{f_j}(\vec{x_n} \cdot \vec{\alpha_j}) x_{np}
+    \sqrt{w_n} \dot{f_j}(\vec{x}_n \cdot \vec{\alpha}_j) x_{n0} & \hdots & \hdots & \sqrt{w_n} \dot{f_j}(\vec{x}_n \cdot \vec{\alpha}_j) x_{np}
 \end{bmatrix}
 \]
 
-$$= -\sqrt{w_k} \beta_{jk} (\sqrt{\vec{w_I}} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha_j})) \odot \pmb{X}$$
+$$= -\sqrt{w_k} \beta_{jk} (\sqrt{\vec{w}_I} \odot \dot{f_j}(\pmb{X} \cdot \vec{\alpha}_j)) \odot \pmb{X}$$
 
 where everything left of the last $\odot$ simplifies to an $n$-vector, so the Hadamard product is taken with each column of $\pmb{X}$ individually.\newline
 
-As per Gauss-Newton, the update to the parameter $\vec{\alpha_j}$ to the function $\vec{g_{jkw}}$ is given by the solution $\vec{\delta}$ to:
+As per Gauss-Newton, the update to the parameter $\vec{\alpha}_j$ to the function $\vec{g}_{jkw}$ is given by the solution $\vec{\delta}$ to:
 
-$$\left[ \sum_{k=1}^d J_{jk}^T J_{jk} \right] \vec{\delta} = \sum_{k=1}^d J_{jk}^T \vec{g_{jkw}}$$
+$$\left[ \sum_{k=1}^d J_{jk}^T J_{jk} \right] \vec{\delta} = -\sum_{k=1}^d J_{jk}^T \vec{g}_{jkw}$$
 
 On the left side is a $p \times p$ matrix, and on the right a $p \times 1$ vector, so we have an easy-to-solve linear inverse problem.
 
-$$ \vec{\alpha_j} = \vec{\alpha_j} + \vec{\delta} $$
+$$\vec{\alpha}_j += \vec{\delta}$$
 
-In practice $\vec{\alpha_j}$ is renormalized after this update to avoid numerical drift and keep it from blowing up. Because $\vec{\alpha_j}$ is a projection vector only meant to flatten the data along some dimension, its magnitude does not really matter.
+In practice $\vec{\alpha}_j$ is renormalized after this update to avoid numerical drift and keep it from blowing up. Because $\vec{\alpha}_j$ is a projection vector only meant to flatten the data along some dimension, its magnitude does not really matter.
 
 \subsection{Testing for Convergence}
 
@@ -258,7 +258,7 @@ Parameters are considered ``converged" when their values across iterations cause
 
 Because we only make updates to the parameters governing stage $j$, we can make use the convenient identity
 
-$$\pmb{Y} - \pmb{\hat{Y}} = \pmb{R}_j - f_j(\pmb{X} \cdot \vec{\alpha_j}) \otimes \vec{\beta_j}^T$$
+$$\pmb{Y} - \pmb{\hat{Y}} = \pmb{R}_j - f_j(\pmb{X} \cdot \vec{\alpha}_j) \otimes \vec{\beta}_j^T$$
 
 to calculate the loss quickly.
 
@@ -266,7 +266,7 @@ to calculate the loss quickly.
 
 Let the miscalssification risk $R$ be
 
-$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c=1}^q l_{ck} p(c | \vec{x_i})$$
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c=1}^q l_{ck} p(c | \vec{x}_i)$$
 
 where
 \begin{itemize}
@@ -276,7 +276,7 @@ where
 	\item $\min_k$ implements the optimal decision rule for each example
 	\item $l_{ck}$ is the user-specified loss for predicting $y=k$ when in truth $y=c$
 	\item the inner sum is the total loss for predicting $y=k$
-	\item $p(c | \vec{x_i})$ is the true probability $y=c$ given input $\vec{x_i}$
+	\item $p(c | \vec{x}_i)$ is the true probability $y=c$ given input $\vec{x}_i$
 \end{itemize}
 
 The unknown here is that conditional probability. If we define an indicator variable
@@ -285,7 +285,7 @@ $$h_{ci} = 1 \text{ if } y_i=c,\ 0 \text{ otherwise}$$
 
 then Friedman says we can rewrite the conditional probability as
 
-$$p(c | \vec{x_i}) = \frac{\pi_c S}{s_c} E[h_{ci} | \vec{x_i}]$$
+$$p(c | \vec{x}_i) = \frac{\pi_c S}{s_c} E[h_{ci} | \vec{x}_i]$$
 
 where
 \begin{itemize}
@@ -310,21 +310,21 @@ $$l_{ck} = 1 \text{ if } c \neq k,\ 0 \text{ if } c=k$$
 
 So rewrite the risk as
 
-$$R = \sum_{i=1}^n \min_{k \in [1,q]} \frac{1}{S} \sum_{c=1}^q \frac{s_c l_{ck}}{\pi_c} E[h_{ci} | \vec{x_i}]$$
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \frac{1}{S} \sum_{c=1}^q \frac{s_c l_{ck}}{\pi_c} E[h_{ci} | \vec{x}_i]$$
 
 And with the simplifying assumptions that all examples are equally important and misclassification is equally bad between all class pairs it becomes:
 
-$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[h_{ci} | \vec{x_i}]$$
+$$R = \sum_{i=1}^n \min_{k \in [1,q]} \sum_{c \neq k} E[h_{ci} | \vec{x}_i]$$
 
 Or equivalently:
 
-$$R = \sum_{i=1}^n (1 - \max_{k \in [1,q]} E[h_{ci} | \vec{x_i}])$$
+$$R = \sum_{i=1}^n (1 - \max_{k \in [1,q]} E[h_{ci} | \vec{x}_i])$$
 
 because the sum is minimized by excluding the largest expectation, and the expectation across all classes sums to 1.
 
-Now, recognize $E[\vec{h_c} | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x_i}]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x_i}$ is known to be either a one or a zero, so $E[\vec{h_c} | \pmb{X}] = \vec{h_c}$, $h_{ci} \forall i$ stacked together.
+Now, recognize $E[\vec{h}_c | \pmb{X}]$ is a vector of the values $E[h_{ci} | \vec{x}_i]$, and for training data the expectation that $h_{ci}$ has a given value given $\vec{x}_i$ is known to be either a one or a zero, so $E[\vec{h}_c | \pmb{X}] = \vec{h}_c$, $h_{ci} \forall i$ stacked together.
 
-Further, recognize that stacking $\vec{h_c}$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$:
+Further, recognize that stacking $\vec{h}_c$ for all classes $c$ together as columns yields $\pmb{H}$, a one-hot representation of the true classifications $\pmb{Y}$:
 
 \[
 \pmb{Y} =
@@ -366,7 +366,7 @@ $$w_c = \frac{\sum_{i=1}^n w_i h_{ci}}{\sum_{i=1}^n h_{ci}} \sum_{k \in [1,q]} l
 
 Vectorizing to obtain this weight for all classes at once we get:
 
-$$\vec{w_C} = \frac{\vec{w_I} \cdot \pmb{H}}{\sum_{i=1}^n \pmb{H}} \odot \sum_{k=1}^q \pmb{L}$$
+$$\vec{w}_C = \frac{\vec{w}_I \cdot \pmb{H}}{\sum_{i=1}^n \pmb{H}} \odot \sum_{k=1}^q \pmb{L}$$
 
 where $\pmb{L}[c,k] = l_{ck}$, the sum over $k$ amounts to a sum along the horizontal (second) axis, the sum over $n$ of $\pmb{H}$ amounts to a sum along the vertical (first) axis, and the division is pointwise on the vectors involved.
 
