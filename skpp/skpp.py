@@ -315,7 +315,7 @@ class ProjectionPursuitRegressor(BaseEstimator, TransformerMixin, RegressorMixin
 				# Find the part of the Jacobians that is common to all
 				J = -(self._df_[j](p_j)*numpy.sqrt(self._example_weights)*X.T).T
 				JTJ = J.T @ J # <- weights yet to be factored in
-				A = sum([self._out_dim_weights[k] * (self._beta_[k, j]**2) * JTJ
+				A = sum([self._out_dim_weights[k] * self._beta_[k, j]**2 * JTJ
 					for k in range(Y.shape[1])])
 				# Collect all g_jk vectors in to a convenient matrix G_j
 				G_j = R_j - numpy.outer(self._f_[j](p_j), self._beta_[:, j].T)
